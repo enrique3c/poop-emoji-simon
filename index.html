@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
+<title>Poop Emoji Simon 🚽🧠</title>
+
+<!-- PWA & Mobile App -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#4EC5F1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Poop Simon">
+<link rel="apple-touch-icon" href="icon-192.png">
+
+<!-- Open Graph / Social Sharing -->
+<meta property="og:title" content="Poop Emoji Simon 🚽🧠">
+<meta property="og:description" content="Train your brain. One flush at a time. A ridiculously serious brain-training game for the least serious moment of your day.">
+<meta property="og:image" content="og-image.png">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Poop Emoji Simon 🚽🧠">
+<meta name="twitter:description" content="Train your brain. One flush at a time.">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap');
+
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+:root {
+  --toilet-blue: #4EC5F1;
+  --duck-yellow: #FFD84D;
+  --poop-brown: #8B4513;
+  --bubblegum-pink: #FF6FB5;
+  --mint-green: #7EE7C1;
+  --bg-light: #E8F8FF;
+  --bg-tile: #D4F1FF;
+}
+
+html, body {
+  width: 100%; height: 100%;
+  overflow: hidden;
+  font-family: 'Nunito', sans-serif;
+  background: var(--bg-light);
+  touch-action: manipulation;
+}
+
+#game-container {
+  width: 100%; height: 100%;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(180deg, #D4F1FF 0%, #E8F8FF 50%, #D4F1FF 100%);
+}
+
+/* Bathroom tile pattern */
+.tile-bg {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(78,197,241,0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(78,197,241,0.08) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none; z-index: 0;
+}
+
+/* Floating bubbles */
+.bubble {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.8), rgba(78,197,241,0.15));
+  border: 1px solid rgba(78,197,241,0.2);
+  animation: float-up linear infinite;
+  pointer-events: none; z-index: 0;
+}
+@keyframes float-up {
+  0% { transform: translateY(100vh) scale(0.5); opacity: 0; }
+  10% { opacity: 0.7; }
+  90% { opacity: 0.4; }
+  100% { transform: translateY(-20vh) scale(1.2); opacity: 0; }
+}
+
+/* Screens */
+.screen {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  z-index: 10;
+  transition: opacity 0.4s, transform 0.4s;
+  padding: 20px;
+}
+.screen.hidden {
+  opacity: 0; pointer-events: none;
+  transform: scale(0.95);
+}
+
+/* Title screen */
+.title-emoji { font-size: 80px; animation: title-bounce 1.5s ease-in-out infinite; }
+@keyframes title-bounce {
+  0%,100% { transform: translateY(0) rotate(-5deg); }
+  50% { transform: translateY(-15px) rotate(5deg); }
+}
+.game-title {
+  font-family: 'Fredoka One', cursive;
+  font-size: clamp(28px, 7vw, 48px);
+  color: var(--poop-brown);
+  text-shadow: 2px 2px 0 var(--duck-yellow), 4px 4px 0 rgba(0,0,0,0.1);
+  text-align: center; margin: 10px 0;
+}
+.game-subtitle {
+  font-size: clamp(13px, 3.5vw, 18px);
+  color: #6B8A99; text-align: center;
+  max-width: 320px; line-height: 1.4;
+  margin-bottom: 20px;
+}
+.tagline {
+  font-family: 'Fredoka One', cursive;
+  font-size: clamp(11px, 3vw, 15px);
+  color: var(--bubblegum-pink);
+  margin-top: 15px;
+}
+
+/* Buttons */
+.btn {
+  font-family: 'Fredoka One', cursive;
+  border: none; border-radius: 20px;
+  padding: 14px 36px; font-size: 18px;
+  cursor: pointer; position: relative;
+  transition: transform 0.15s, box-shadow 0.15s;
+  box-shadow: 0 4px 0 rgba(0,0,0,0.15), 0 6px 20px rgba(0,0,0,0.1);
+  text-transform: uppercase; letter-spacing: 1px;
+}
+.btn:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(0,0,0,0.15); }
+.btn-primary {
+  background: linear-gradient(135deg, var(--duck-yellow), #FFC107);
+  color: var(--poop-brown);
+}
+.btn-mode {
+  background: linear-gradient(135deg, var(--toilet-blue), #3AAFDB);
+  color: white; font-size: 14px; padding: 10px 24px; margin: 5px;
+  border-radius: 15px;
+}
+.btn-pink {
+  background: linear-gradient(135deg, var(--bubblegum-pink), #E84F95);
+  color: white;
+}
+.btn-green {
+  background: linear-gradient(135deg, var(--mint-green), #5CC9A1);
+  color: #2D6B4F;
+}
+.mode-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 10px 0; max-width: 340px; }
+
+/* Game screen */
+.game-header {
+  position: absolute; top: 0; left: 0; right: 0;
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 12px 16px; z-index: 20;
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(8px);
+  border-bottom: 2px solid rgba(78,197,241,0.2);
+}
+.level-badge {
+  font-family: 'Fredoka One', cursive;
+  background: linear-gradient(135deg, var(--bubblegum-pink), #E84F95);
+  color: white; padding: 4px 14px; border-radius: 20px;
+  font-size: 14px;
+}
+.score-display {
+  font-family: 'Fredoka One', cursive;
+  color: var(--poop-brown); font-size: 16px;
+}
+.mode-label {
+  font-size: 11px; color: var(--toilet-blue);
+  font-weight: 700; text-transform: uppercase;
+}
+
+/* Sequence display area */
+.sequence-area {
+  position: absolute;
+  top: 60px; left: 0; right: 0;
+  height: 140px;
+  display: flex; align-items: center; justify-content: center;
+  z-index: 15;
+}
+.sequence-display {
+  font-size: 60px;
+  transition: transform 0.3s, opacity 0.3s;
+}
+.sequence-display.wiggle { animation: wiggle 0.5s ease-in-out; }
+@keyframes wiggle {
+  0%,100% { transform: rotate(0) scale(1); }
+  25% { transform: rotate(-15deg) scale(1.2); }
+  75% { transform: rotate(15deg) scale(1.3); }
+}
+
+.message-banner {
+  position: absolute;
+  top: 200px; left: 20px; right: 20px;
+  text-align: center;
+  font-family: 'Fredoka One', cursive;
+  font-size: clamp(16px, 4vw, 22px);
+  color: var(--poop-brown);
+  z-index: 15;
+  transition: opacity 0.3s;
+  text-shadow: 1px 1px 0 rgba(255,255,255,0.8);
+}
+
+/* Emoji grid */
+.emoji-grid {
+  position: absolute;
+  bottom: 20px; left: 10px; right: 10px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  z-index: 15;
+  max-width: 360px;
+  margin: 0 auto;
+  padding: 0 10px;
+}
+.emoji-btn {
+  aspect-ratio: 1;
+  border: none; border-radius: 18px;
+  font-size: clamp(32px, 10vw, 48px);
+  cursor: pointer;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  transition: transform 0.1s, box-shadow 0.1s;
+  box-shadow: 0 4px 0 rgba(0,0,0,0.1), 0 4px 15px rgba(0,0,0,0.08);
+  position: relative;
+  background: rgba(255,255,255,0.9);
+  backdrop-filter: blur(4px);
+}
+.emoji-btn:active { transform: scale(0.92) translateY(2px); }
+.emoji-btn.flash {
+  animation: emoji-flash 0.4s ease-out;
+}
+@keyframes emoji-flash {
+  0% { background: rgba(255,216,77,0.8); transform: scale(1.1); }
+  100% { background: rgba(255,255,255,0.9); transform: scale(1); }
+}
+.emoji-btn.wrong { animation: shake 0.4s ease-out; background: rgba(255,100,100,0.3); }
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  25% { transform: translateX(-8px); }
+  75% { transform: translateX(8px); }
+}
+.emoji-btn .emoji-name {
+  font-size: 8px; font-weight: 900;
+  color: #888; margin-top: 2px;
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+.emoji-btn.disabled { opacity: 0.4; pointer-events: none; }
+
+/* Power-ups bar */
+.powerup-bar {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  display: flex; justify-content: center; gap: 8px;
+  padding: 6px 10px;
+  background: rgba(255,255,255,0.8);
+  backdrop-filter: blur(8px);
+  z-index: 20;
+  border-top: 2px solid rgba(78,197,241,0.15);
+}
+.powerup-btn {
+  border: none; border-radius: 12px;
+  padding: 6px 12px; font-size: 11px;
+  font-family: 'Nunito', sans-serif; font-weight: 900;
+  cursor: pointer;
+  background: linear-gradient(135deg, #FFF3D4, #FFE9A8);
+  color: var(--poop-brown);
+  box-shadow: 0 2px 0 rgba(0,0,0,0.1);
+  transition: transform 0.1s;
+  display: flex; align-items: center; gap: 4px;
+}
+.powerup-btn:active { transform: scale(0.95); }
+.powerup-btn:disabled { opacity: 0.3; pointer-events: none; }
+.powerup-btn .pu-icon { font-size: 16px; }
+.powerup-count {
+  background: var(--bubblegum-pink); color: white;
+  border-radius: 50%; width: 16px; height: 16px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px;
+}
+
+/* Timer bar */
+.timer-bar-container {
+  position: absolute;
+  top: 54px; left: 0; right: 0;
+  height: 4px; z-index: 20;
+  background: rgba(0,0,0,0.05);
+}
+.timer-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--mint-green), var(--duck-yellow), var(--bubblegum-pink));
+  transition: width 0.1s linear;
+  border-radius: 0 2px 2px 0;
+}
+
+/* Fail overlay */
+.fail-overlay {
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  z-index: 50;
+  animation: fade-in 0.3s;
+}
+@keyframes fade-in { from { opacity: 0; } }
+.judge-toilet {
+  font-size: 100px;
+  animation: toilet-slide 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes toilet-slide {
+  0% { transform: translateY(200px) rotate(10deg); opacity: 0; }
+  100% { transform: translateY(0) rotate(0); opacity: 1; }
+}
+.fail-message {
+  font-family: 'Fredoka One', cursive;
+  color: white; font-size: clamp(18px, 5vw, 26px);
+  text-align: center; margin: 15px 20px;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+.flush-effect {
+  position: absolute; inset: 0;
+  background: radial-gradient(circle, transparent 30%, rgba(78,197,241,0.4) 100%);
+  animation: flush-spin 1s ease-in-out;
+  pointer-events: none;
+}
+@keyframes flush-spin {
+  0% { transform: rotate(0) scale(1); opacity: 1; }
+  100% { transform: rotate(720deg) scale(0); opacity: 0; }
+}
+
+/* Score card */
+.score-card {
+  background: white;
+  border-radius: 24px;
+  padding: 24px;
+  max-width: 320px; width: 90%;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+  text-align: center;
+  position: relative; overflow: hidden;
+}
+.score-card::before {
+  content: ''; position: absolute;
+  top: 0; left: 0; right: 0; height: 6px;
+  background: linear-gradient(90deg, var(--toilet-blue), var(--duck-yellow), var(--bubblegum-pink), var(--mint-green));
+}
+.mirror-label {
+  font-family: 'Fredoka One', cursive;
+  font-size: 11px; color: #AAA;
+  text-transform: uppercase; letter-spacing: 2px;
+  margin-bottom: 10px;
+}
+.flush-score {
+  font-family: 'Fredoka One', cursive;
+  font-size: 48px; color: var(--poop-brown);
+}
+.score-detail {
+  font-size: 14px; color: #777;
+  margin: 3px 0;
+}
+.score-detail span { font-weight: 900; color: var(--poop-brown); }
+.achievement-pop {
+  background: linear-gradient(135deg, var(--duck-yellow), #FFC107);
+  border-radius: 12px; padding: 8px 16px;
+  margin: 10px 0; display: inline-block;
+  font-family: 'Fredoka One', cursive;
+  font-size: 13px; color: var(--poop-brown);
+}
+.score-buttons { display: flex; gap: 8px; justify-content: center; margin-top: 15px; flex-wrap: wrap; }
+
+/* Chaos mode effects */
+.chaos .emoji-btn { animation: chaos-wobble 0.6s ease-in-out infinite; }
+@keyframes chaos-wobble {
+  0%,100% { transform: rotate(-3deg); }
+  50% { transform: rotate(3deg); }
+}
+.chaos .emoji-btn:nth-child(odd) { animation-delay: 0.3s; }
+.drunk .emoji-btn { animation: drunk-wobble 1.2s ease-in-out infinite; }
+@keyframes drunk-wobble {
+  0%,100% { transform: translate(0,0) rotate(0); }
+  25% { transform: translate(3px,-2px) rotate(2deg); }
+  50% { transform: translate(-2px,3px) rotate(-3deg); }
+  75% { transform: translate(2px,1px) rotate(1deg); }
+}
+
+/* Progress dots */
+.progress-dots {
+  position: absolute;
+  top: 240px; left: 20px; right: 20px;
+  display: flex; justify-content: center; gap: 6px;
+  flex-wrap: wrap; z-index: 15;
+}
+.pdot {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: rgba(0,0,0,0.1);
+  transition: background 0.2s, transform 0.2s;
+}
+.pdot.done { background: var(--mint-green); transform: scale(1.2); }
+.pdot.current { background: var(--duck-yellow); transform: scale(1.3); animation: pulse-dot 0.6s infinite; }
+@keyframes pulse-dot { 0%,100% { transform: scale(1.3); } 50% { transform: scale(1); } }
+.pdot.wrong { background: var(--bubblegum-pink); }
+
+/* Daily challenge badge */
+.daily-badge {
+  background: linear-gradient(135deg, #9B59B6, #8E44AD);
+  color: white; padding: 8px 16px; border-radius: 12px;
+  font-family: 'Fredoka One', cursive; font-size: 13px;
+  margin-bottom: 10px; text-align: center;
+}
+
+/* Responsive adjustments */
+@media (max-height: 700px) {
+  .sequence-area { height: 100px; top: 56px; }
+  .sequence-display { font-size: 50px; }
+  .message-banner { top: 160px; }
+  .progress-dots { top: 195px; }
+  .emoji-grid { gap: 6px; }
+  .emoji-btn { font-size: clamp(28px, 8vw, 40px); }
+}
+@media (max-height: 600px) {
+  .emoji-grid { bottom: 10px; gap: 4px; }
+  .powerup-bar { display: none; }
+}
+</style>
+</head>
+<body>
+<div id="game-container">
+  <div class="tile-bg"></div>
+  <div id="bubbles"></div>
+
+  <!-- TITLE SCREEN -->
+  <div id="title-screen" class="screen">
+    <div class="title-emoji">💩</div>
+    <div class="game-title">Poop Emoji<br>Simon</div>
+    <div class="game-subtitle">This game improves memory… or at least distracts you while you poop.</div>
+    <button class="btn btn-primary" onclick="showModeSelect()" style="font-size:20px;">🧠 Engage Brain</button>
+    <div class="tagline">Train your brain. One flush at a time.</div>
+  </div>
+
+  <!-- MODE SELECT -->
+  <div id="mode-screen" class="screen hidden">
+    <div style="font-size:50px;margin-bottom:10px;">🚽</div>
+    <div class="game-title" style="font-size:clamp(22px,5vw,32px);">Choose Your Throne</div>
+    <div class="mode-grid">
+      <button class="btn btn-mode" onclick="startGame('classic')">🎯 Classic</button>
+      <button class="btn btn-mode" onclick="startGame('panic')">⏱️ Panic</button>
+      <button class="btn btn-mode" onclick="startGame('drunk')">🦆 Drunk Duck</button>
+      <button class="btn btn-mode" onclick="startGame('endless')">♾️ Endless</button>
+      <button class="btn btn-mode" onclick="startGame('daily')" style="background:linear-gradient(135deg,#9B59B6,#8E44AD);">📅 Daily</button>
+    </div>
+    <button class="btn btn-pink" onclick="showTitle()" style="font-size:14px;margin-top:10px;">← Back</button>
+  </div>
+
+  <!-- GAME SCREEN -->
+  <div id="game-screen" class="screen hidden">
+    <div class="game-header">
+      <div class="level-badge" id="level-badge">LVL 1</div>
+      <div class="mode-label" id="mode-name">CLASSIC</div>
+      <div class="score-display" id="score-display">💩 0</div>
+    </div>
+    <div class="timer-bar-container" id="timer-container" style="display:none;">
+      <div class="timer-bar" id="timer-bar" style="width:100%"></div>
+    </div>
+    <div class="sequence-area">
+      <div class="sequence-display" id="sequence-display"></div>
+    </div>
+    <div class="message-banner" id="message-banner"></div>
+    <div class="progress-dots" id="progress-dots"></div>
+    <div class="emoji-grid" id="emoji-grid"></div>
+    <div class="powerup-bar" id="powerup-bar">
+      <button class="powerup-btn" id="pu-plunger" onclick="usePowerUp('plunger')">
+        <span class="pu-icon">🪠</span> Plunger <span class="powerup-count" id="pu-plunger-count">1</span>
+      </button>
+      <button class="powerup-btn" id="pu-replay" onclick="usePowerUp('replay')">
+        <span class="pu-icon">🧴</span> Replay <span class="powerup-count" id="pu-replay-count">1</span>
+      </button>
+      <button class="powerup-btn" id="pu-hint" onclick="usePowerUp('hint')">
+        <span class="pu-icon">🦆</span> Hint <span class="powerup-count" id="pu-hint-count">1</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- FAIL / SCORE OVERLAY -->
+  <div id="fail-overlay" class="fail-overlay hidden" style="display:none;">
+    <div class="flush-effect" id="flush-fx"></div>
+    <div class="judge-toilet" id="judge-emoji">🚽</div>
+    <div class="fail-message" id="fail-message"></div>
+    <div class="score-card" id="score-card" style="display:none;">
+      <div class="mirror-label">🪞 Bathroom Mirror Scoreboard</div>
+      <div style="font-size:14px;color:#AAA;margin-bottom:4px;">Brain Flush Score</div>
+      <div class="flush-score" id="final-score">0</div>
+      <div class="score-detail">Memory: <span id="stat-memory">0/10</span></div>
+      <div class="score-detail">Focus: <span id="stat-focus">0/10</span></div>
+      <div class="score-detail">Bathroom Confidence: <span id="stat-confidence">questionable</span></div>
+      <div id="achievement-area"></div>
+      <div class="score-buttons">
+        <button class="btn btn-primary" onclick="restartGame()" style="font-size:14px;padding:10px 20px;">🔄 Again</button>
+        <button class="btn btn-green" onclick="shareScore()" style="font-size:14px;padding:10px 20px;">📤 Share</button>
+        <button class="btn btn-pink" onclick="showTitle()" style="font-size:14px;padding:10px 20px;">🏠 Home</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============ EMOJI CHARACTERS ============
+const CHARACTERS = [
+  { emoji: '💩', name: 'King Poop', sound: 'plop', tapMsg: "You remembered me! I'm honored.", color: '#8B4513' },
+  { emoji: '🦆', name: 'Sir Quacks', sound: 'quack', tapMsg: "QUAAACK!", color: '#FFD84D' },
+  { emoji: '🍕', name: 'Party Pizza', sound: 'disco', tapMsg: "🕺 Pizza time!", color: '#FF6347' },
+  { emoji: '🚽', name: 'The Judge', sound: 'flush', tapMsg: "Order in the bathroom!", color: '#4EC5F1' },
+  { emoji: '🧻', name: 'TP Ninja', sound: 'swoosh', tapMsg: "HI-YAH!", color: '#F5F5DC' },
+  { emoji: '🐸', name: 'Bath Frog', sound: 'croak', tapMsg: "Ribbit, my dude.", color: '#7EE7C1' },
+  { emoji: '🧦', name: 'Lost Sock', sound: 'sniff', tapMsg: "I smell... terrible.", color: '#9B9B9B' },
+  { emoji: '🦠', name: 'Germ Boss', sound: 'evil', tapMsg: "Mwahaha!", color: '#ADFF2F' },
+  { emoji: '🐙', name: 'Sink Octo', sound: 'splash', tapMsg: "Wrong sink, buddy.", color: '#E84F95' },
+];
+
+const FAIL_MESSAGES = [
+  "That was embarrassing.",
+  "My pipes have seen smarter humans.",
+  "Did you forget already?",
+  "You had ONE job.",
+  "Maybe stick to breathing.",
+  "Even the soap is disappointed.",
+  "The toilet paper could do better.",
+  "I'm flushing your dignity now.",
+  "Your memory has left the bathroom.",
+  "The rubber duck is crying.",
+];
+
+const SUCCESS_MESSAGES = [
+  "Your brain is working! Suspicious!",
+  "Not bad for a bathroom break!",
+  "King Poop approves! 👑",
+  "Sir Quacksalot nods respectfully.",
+  "The toilet is mildly impressed.",
+  "Even the germs are clapping.",
+  "Your neurons are on fire! 🔥",
+  "Bathroom genius detected!",
+];
+
+const ACHIEVEMENTS = {
+  solid: { name: "Solid Performance", desc: "Score 20", icon: "💪", threshold: 20 },
+  plumbing: { name: "Brain Plumbing", desc: "Score 40", icon: "🔧", threshold: 40 },
+  royal: { name: "The Royal Flush", desc: "Score 100", icon: "👑", threshold: 100 },
+  einstein: { name: "Bathroom Einstein", desc: "20 perfect rounds", icon: "🧠", rounds: 20 },
+  forgotten: { name: "The Forgotten", desc: "Lose on level 2", icon: "💀", failLevel: 2 },
+};
+
+const CONFIDENCE_LEVELS = [
+  "non-existent", "questionable", "shaky", "building", "decent",
+  "solid", "confident", "impressive", "legendary", "transcendent"
+];
+
+// ============ AUDIO ENGINE ============
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let audioCtx;
+function ensureAudio() {
+  if (!audioCtx) audioCtx = new AudioCtx();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+}
+
+function playTone(freq, duration, type = 'sine', volume = 0.15) {
+  ensureAudio();
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = type; osc.frequency.value = freq;
+  gain.gain.setValueAtTime(volume, audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+  osc.connect(gain); gain.connect(audioCtx.destination);
+  osc.start(); osc.stop(audioCtx.currentTime + duration);
+}
+
+function playNoise(duration, volume = 0.08) {
+  ensureAudio();
+  const bufferSize = audioCtx.sampleRate * duration;
+  const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < bufferSize; i++) data[i] = (Math.random() * 2 - 1) * 0.5;
+  const source = audioCtx.createBufferSource();
+  const gain = audioCtx.createGain();
+  source.buffer = buffer;
+  gain.gain.setValueAtTime(volume, audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+  source.connect(gain); gain.connect(audioCtx.destination);
+  source.start();
+}
+
+const SOUNDS = {
+  plop: () => { playTone(120, 0.2, 'sine', 0.2); setTimeout(() => playTone(80, 0.15, 'sine', 0.15), 80); },
+  quack: () => { playTone(800, 0.08, 'square', 0.1); setTimeout(() => playTone(600, 0.12, 'square', 0.12), 80); setTimeout(() => playTone(900, 0.1, 'square', 0.08), 160); },
+  disco: () => { [523,659,784].forEach((f,i) => setTimeout(() => playTone(f, 0.12, 'square', 0.08), i*60)); },
+  flush: () => { playNoise(0.6, 0.12); playTone(200, 0.4, 'sawtooth', 0.04); },
+  swoosh: () => { playTone(1200, 0.15, 'sawtooth', 0.06); setTimeout(() => playTone(800, 0.1, 'sawtooth', 0.04), 60); },
+  croak: () => { playTone(150, 0.2, 'square', 0.1); setTimeout(() => playTone(120, 0.25, 'square', 0.12), 100); },
+  sniff: () => { playNoise(0.15, 0.06); setTimeout(() => playNoise(0.2, 0.08), 150); },
+  evil: () => { [200,250,200,300,200].forEach((f,i) => setTimeout(() => playTone(f, 0.1, 'sawtooth', 0.06), i*80)); },
+  splash: () => { playNoise(0.3, 0.1); playTone(400, 0.2, 'sine', 0.06); },
+  fail: () => {
+    [293,277,261,246].forEach((f,i) => setTimeout(() => playTone(f, 0.4, 'triangle', 0.12), i*300));
+  },
+  success: () => { [523,659,784,1047].forEach((f,i) => setTimeout(() => playTone(f, 0.15, 'square', 0.08), i*80)); },
+  bigFlush: () => {
+    playNoise(1.5, 0.15);
+    for(let i = 0; i < 20; i++) setTimeout(() => playTone(300 - i*12, 0.1, 'sawtooth', 0.03), i*70);
+  },
+  fart: () => { playTone(80, 0.3, 'sawtooth', 0.08); playNoise(0.2, 0.05); },
+};
+
+// ============ GAME STATE ============
+let state = {
+  mode: 'classic',
+  sequence: [],
+  playerIndex: 0,
+  level: 1,
+  score: 0,
+  round: 0,
+  isShowingSequence: false,
+  isPlayerTurn: false,
+  activeChars: [],
+  powerUps: { plunger: 1, replay: 1, hint: 1 },
+  timerInterval: null,
+  timeLeft: 0,
+  maxTime: 0,
+  totalCorrect: 0,
+  totalTaps: 0,
+  perfectRounds: 0,
+  startTime: 0,
+};
+
+// ============ DOM REFS ============
+const $ = id => document.getElementById(id);
+
+// ============ BUBBLES ============
+function createBubbles() {
+  const c = $('bubbles');
+  for (let i = 0; i < 12; i++) {
+    const b = document.createElement('div');
+    b.className = 'bubble';
+    const size = 8 + Math.random() * 25;
+    b.style.cssText = `width:${size}px;height:${size}px;left:${Math.random()*95}%;animation-duration:${6+Math.random()*10}s;animation-delay:${Math.random()*8}s;`;
+    c.appendChild(b);
+  }
+}
+createBubbles();
+
+// ============ SCREEN MANAGEMENT ============
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+  $(id).classList.remove('hidden');
+}
+function showTitle() {
+  clearTimer();
+  showScreen('title-screen');
+  $('fail-overlay').style.display = 'none';
+  $('fail-overlay').classList.add('hidden');
+}
+function showModeSelect() {
+  ensureAudio();
+  SOUNDS.plop();
+  showScreen('mode-screen');
+}
+
+// ============ DAILY SEED ============
+function dailySeed() {
+  const d = new Date();
+  return d.getFullYear() * 10000 + (d.getMonth()+1) * 100 + d.getDate();
+}
+function seededRandom(seed) {
+  let s = seed;
+  return function() {
+    s = (s * 16807) % 2147483647;
+    return (s - 1) / 2147483646;
+  };
+}
+
+// ============ START GAME ============
+function startGame(mode) {
+  SOUNDS.flush();
+  state.mode = mode;
+  state.sequence = [];
+  state.playerIndex = 0;
+  state.level = 1;
+  state.score = 0;
+  state.round = 0;
+  state.isShowingSequence = false;
+  state.isPlayerTurn = false;
+  state.totalCorrect = 0;
+  state.totalTaps = 0;
+  state.perfectRounds = 0;
+  state.startTime = Date.now();
+  state.powerUps = { plunger: 1, replay: 1, hint: 1 };
+  updatePowerUpUI();
+
+  // Pick active characters based on level
+  const charCount = Math.min(4 + Math.floor(state.level / 3), 9);
+  if (mode === 'daily') {
+    const rng = seededRandom(dailySeed());
+    const shuffled = [...CHARACTERS].sort(() => rng() - 0.5);
+    state.activeChars = shuffled.slice(0, 6);
+  } else {
+    state.activeChars = CHARACTERS.slice(0, charCount);
+  }
+
+  showScreen('game-screen');
+  $('mode-name').textContent = mode.toUpperCase();
+  $('fail-overlay').style.display = 'none';
+  $('fail-overlay').classList.add('hidden');
+
+  const grid = $('emoji-grid');
+  grid.classList.remove('chaos', 'drunk');
+  if (mode === 'drunk') grid.classList.add('drunk');
+
+  $('timer-container').style.display = (mode === 'panic') ? 'block' : 'none';
+
+  buildGrid();
+  updateHeader();
+  setTimeout(() => nextRound(), 600);
+}
+
+function restartGame() { startGame(state.mode); }
+
+// ============ BUILD GRID ============
+function buildGrid() {
+  const grid = $('emoji-grid');
+  grid.innerHTML = '';
+  const cols = state.activeChars.length <= 4 ? 2 : 3;
+  grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+
+  state.activeChars.forEach((ch, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'emoji-btn disabled';
+    btn.innerHTML = `<span style="line-height:1">${ch.emoji}</span><span class="emoji-name">${ch.name}</span>`;
+    btn.dataset.index = i;
+    btn.addEventListener('click', () => handleTap(i));
+    // Prevent double-tap zoom
+    btn.addEventListener('touchend', e => e.preventDefault());
+    grid.appendChild(btn);
+  });
+}
+
+function setGridEnabled(enabled) {
+  document.querySelectorAll('.emoji-btn').forEach(b => {
+    b.classList.toggle('disabled', !enabled);
+  });
+}
+
+// ============ HEADER ============
+function updateHeader() {
+  $('level-badge').textContent = `LVL ${state.level}`;
+  $('score-display').textContent = `💩 ${state.score}`;
+}
+
+// ============ NEXT ROUND ============
+function nextRound() {
+  state.round++;
+  state.level = state.round;
+  state.playerIndex = 0;
+
+  // Expand active characters at higher levels
+  const charCount = Math.min(4 + Math.floor(state.level / 3), 9);
+  if (state.mode !== 'daily' && charCount > state.activeChars.length) {
+    state.activeChars = CHARACTERS.slice(0, charCount);
+    buildGrid();
+  }
+
+  // Chaos mode at level 20+
+  const grid = $('emoji-grid');
+  if (state.level >= 20 && state.mode !== 'drunk') {
+    grid.classList.add('chaos');
+  }
+
+  // Add new emoji to sequence
+  const pick = Math.floor(Math.random() * state.activeChars.length);
+  state.sequence.push(pick);
+
+  updateHeader();
+  showMessage("Prepare your brain… and your bowels.");
+
+  setTimeout(() => {
+    showMessage('');
+    playSequence();
+  }, 1200);
+}
+
+// ============ PLAY SEQUENCE ============
+async function playSequence() {
+  state.isShowingSequence = true;
+  setGridEnabled(false);
+  buildProgressDots();
+
+  const display = $('sequence-display');
+  const speed = Math.max(300, 700 - state.level * 20);
+
+  for (let i = 0; i < state.sequence.length; i++) {
+    const ch = state.activeChars[state.sequence[i]];
+    display.textContent = ch.emoji;
+    display.classList.remove('wiggle');
+    void display.offsetWidth;
+    display.classList.add('wiggle');
+    SOUNDS[ch.sound]();
+
+    // Flash the grid button too
+    const btns = document.querySelectorAll('.emoji-btn');
+    const btn = btns[state.sequence[i]];
+    if (btn) { btn.classList.add('flash'); setTimeout(() => btn.classList.remove('flash'), 400); }
+
+    await sleep(speed);
+    display.textContent = '';
+    await sleep(150);
+  }
+
+  state.isShowingSequence = false;
+  state.isPlayerTurn = true;
+  setGridEnabled(true);
+  showMessage("Your turn! 🧠");
+
+  if (state.mode === 'panic') startTimer();
+}
+
+// ============ TIMER (Panic mode) ============
+function startTimer() {
+  clearTimer();
+  state.maxTime = Math.max(3, 8 - state.level * 0.3);
+  state.timeLeft = state.maxTime;
+  $('timer-bar').style.width = '100%';
+  state.timerInterval = setInterval(() => {
+    state.timeLeft -= 0.05;
+    const pct = Math.max(0, (state.timeLeft / state.maxTime) * 100);
+    $('timer-bar').style.width = pct + '%';
+    if (state.timeLeft <= 0) {
+      clearTimer();
+      handleFail();
+    }
+  }, 50);
+}
+function clearTimer() {
+  if (state.timerInterval) { clearInterval(state.timerInterval); state.timerInterval = null; }
+}
+
+// ============ PROGRESS DOTS ============
+function buildProgressDots() {
+  const c = $('progress-dots');
+  c.innerHTML = '';
+  state.sequence.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'pdot';
+    c.appendChild(d);
+  });
+}
+function updateProgressDot(index, cls) {
+  const dots = $('progress-dots').children;
+  if (dots[index]) dots[index].className = 'pdot ' + cls;
+}
+
+// ============ HANDLE TAP ============
+function handleTap(charIndex) {
+  if (!state.isPlayerTurn || state.isShowingSequence) return;
+
+  state.totalTaps++;
+  const ch = state.activeChars[charIndex];
+  SOUNDS[ch.sound]();
+
+  const expected = state.sequence[state.playerIndex];
+
+  if (charIndex === expected) {
+    state.totalCorrect++;
+    updateProgressDot(state.playerIndex, 'done');
+
+    // Flash
+    const btns = document.querySelectorAll('.emoji-btn');
+    btns[charIndex].classList.add('flash');
+    setTimeout(() => btns[charIndex].classList.remove('flash'), 300);
+
+    $('sequence-display').textContent = ch.emoji;
+    setTimeout(() => { $('sequence-display').textContent = ''; }, 250);
+
+    state.playerIndex++;
+
+    if (state.playerIndex >= state.sequence.length) {
+      // Round complete!
+      state.isPlayerTurn = false;
+      clearTimer();
+      state.perfectRounds++;
+      const pointsEarned = state.sequence.length + (state.mode === 'panic' ? Math.ceil(state.timeLeft) : 0);
+      state.score += pointsEarned;
+      updateHeader();
+
+      SOUNDS.success();
+      const msg = SUCCESS_MESSAGES[Math.floor(Math.random() * SUCCESS_MESSAGES.length)];
+      showMessage(msg);
+
+      // Chaos fart distraction
+      if (state.level >= 20 && Math.random() > 0.5) {
+        setTimeout(() => SOUNDS.fart(), 400);
+      }
+
+      setTimeout(() => {
+        showMessage('');
+        nextRound();
+      }, 1500);
+    }
+  } else {
+    // WRONG!
+    const btns = document.querySelectorAll('.emoji-btn');
+    btns[charIndex].classList.add('wrong');
+    setTimeout(() => btns[charIndex].classList.remove('wrong'), 500);
+    updateProgressDot(state.playerIndex, 'wrong');
+    handleFail();
+  }
+}
+
+// ============ FAIL ============
+function handleFail() {
+  state.isPlayerTurn = false;
+  clearTimer();
+  setGridEnabled(false);
+
+  SOUNDS.fail();
+
+  const overlay = $('fail-overlay');
+  overlay.style.display = 'flex';
+  overlay.classList.remove('hidden');
+  $('score-card').style.display = 'none';
+
+  // Flush effect
+  const fx = $('flush-fx');
+  fx.style.animation = 'none';
+  void fx.offsetWidth;
+  fx.style.animation = 'flush-spin 1s ease-in-out';
+
+  // Judge toilet slides in
+  $('judge-emoji').textContent = '🚽';
+  const failMsg = FAIL_MESSAGES[Math.floor(Math.random() * FAIL_MESSAGES.length)];
+  $('fail-message').textContent = failMsg;
+
+  setTimeout(() => {
+    SOUNDS.bigFlush();
+  }, 1200);
+
+  setTimeout(() => showScoreCard(), 2500);
+}
+
+// ============ SCORE CARD ============
+function showScoreCard() {
+  $('score-card').style.display = 'block';
+  $('final-score').textContent = state.score;
+
+  const memoryScore = Math.min(10, Math.round((state.totalCorrect / Math.max(1, state.totalTaps)) * 10));
+  const elapsed = (Date.now() - state.startTime) / 1000;
+  const focusScore = Math.min(10, Math.round(state.perfectRounds / Math.max(1, elapsed / 30) * 5));
+  const confIdx = Math.min(9, Math.floor(state.score / 12));
+
+  $('stat-memory').textContent = `${memoryScore}/10`;
+  $('stat-focus').textContent = `${focusScore}/10`;
+  $('stat-confidence').textContent = CONFIDENCE_LEVELS[confIdx];
+
+  // Achievements
+  const area = $('achievement-area');
+  area.innerHTML = '';
+  const earned = [];
+  if (state.score >= ACHIEVEMENTS.solid.threshold) earned.push(ACHIEVEMENTS.solid);
+  if (state.score >= ACHIEVEMENTS.plumbing.threshold) earned.push(ACHIEVEMENTS.plumbing);
+  if (state.score >= ACHIEVEMENTS.royal.threshold) earned.push(ACHIEVEMENTS.royal);
+  if (state.perfectRounds >= ACHIEVEMENTS.einstein.rounds) earned.push(ACHIEVEMENTS.einstein);
+  if (state.level === 2) earned.push(ACHIEVEMENTS.forgotten);
+
+  earned.forEach(a => {
+    const div = document.createElement('div');
+    div.className = 'achievement-pop';
+    div.textContent = `${a.icon} ${a.name}`;
+    area.appendChild(div);
+  });
+}
+
+// ============ SHARE ============
+function shareScore() {
+  const text = `I survived Level ${state.level} in Poop Emoji Simon 🚽🧠\nBrain Flush Score: ${state.score}\nCan your brain handle it?`;
+  if (navigator.share) {
+    navigator.share({ title: 'Poop Emoji Simon', text });
+  } else if (navigator.clipboard) {
+    navigator.clipboard.writeText(text);
+    showMessage('Copied to clipboard! 📋');
+    setTimeout(() => showMessage(''), 2000);
+  }
+}
+
+// ============ POWER-UPS ============
+function usePowerUp(type) {
+  if (state.powerUps[type] <= 0 || !state.isPlayerTurn) return;
+  state.powerUps[type]--;
+  updatePowerUpUI();
+
+  if (type === 'plunger') {
+    // Remove last emoji from remaining sequence (skip current)
+    if (state.sequence.length > state.playerIndex + 1) {
+      state.sequence.splice(state.sequence.length - 1, 1);
+      buildProgressDots();
+      for (let i = 0; i < state.playerIndex; i++) updateProgressDot(i, 'done');
+      SOUNDS.plop();
+      showMessage("🪠 Plunger used! Last one removed!");
+      setTimeout(() => showMessage("Your turn! 🧠"), 1000);
+    }
+  } else if (type === 'replay') {
+    state.isPlayerTurn = false;
+    clearTimer();
+    SOUNDS.splash();
+    showMessage("🧴 Memory Spray! Replaying...");
+    setTimeout(() => playSequence(), 800);
+  } else if (type === 'hint') {
+    // Duck whispers the next emoji
+    const nextChar = state.activeChars[state.sequence[state.playerIndex]];
+    SOUNDS.quack();
+    $('sequence-display').textContent = nextChar.emoji;
+    showMessage(`🦆 "${nextChar.name}!" whispers the duck`);
+    setTimeout(() => {
+      $('sequence-display').textContent = '';
+      showMessage("Your turn! 🧠");
+    }, 1200);
+  }
+}
+
+function updatePowerUpUI() {
+  ['plunger', 'replay', 'hint'].forEach(type => {
+    $(`pu-${type}-count`).textContent = state.powerUps[type];
+    $(`pu-${type}`).disabled = state.powerUps[type] <= 0;
+  });
+}
+
+// ============ UTILS ============
+function showMessage(text) {
+  $('message-banner').textContent = text;
+}
+
+function sleep(ms) {
+  return new Promise(r => setTimeout(r, ms));
+}
+
+// Prevent zoom on double tap
+document.addEventListener('touchstart', e => {
+  if (e.touches.length > 1) e.preventDefault();
+}, { passive: false });
+
+let lastTap = 0;
+document.addEventListener('touchend', e => {
+  const now = Date.now();
+  if (now - lastTap < 300) e.preventDefault();
+  lastTap = now;
+}, false);
+
+// ============ PWA SERVICE WORKER ============
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+
+// ============ INSTALL PROMPT ============
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+});
+</script>
+</body>
+</html>
