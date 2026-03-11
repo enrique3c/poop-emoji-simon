@@ -128,6 +128,7 @@ html, body {
   text-transform: uppercase; letter-spacing: 1px;
 }
 .btn:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(0,0,0,0.15); }
+.btn, .emoji-btn, .powerup-btn { touch-action: manipulation; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
 .btn-primary {
   background: linear-gradient(135deg, var(--duck-yellow), #FFC107);
   color: var(--poop-brown);
@@ -733,9 +734,15 @@ function buildGrid() {
     btn.className = 'emoji-btn disabled';
     btn.innerHTML = `<span style="line-height:1">${ch.emoji}</span><span class="emoji-name">${ch.name}</span>`;
     btn.dataset.index = i;
-    btn.addEventListener('click', () => handleTap(i));
-    // Prevent double-tap zoom
-    btn.addEventListener('touchend', e => e.preventDefault());
+    // Use touchstart on mobile for instant response, click as fallback for desktop
+    let tapped = false;
+    btn.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      if (!tapped) { tapped = true; handleTap(i); setTimeout(() => tapped = false, 300); }
+    }, { passive: false });
+    btn.addEventListener('click', (e) => {
+      if (!tapped) handleTap(i);
+    });
     grid.appendChild(btn);
   });
 }
@@ -1037,17 +1044,10 @@ function sleep(ms) {
   return new Promise(r => setTimeout(r, ms));
 }
 
-// Prevent zoom on double tap
+// Prevent pinch zoom only
 document.addEventListener('touchstart', e => {
   if (e.touches.length > 1) e.preventDefault();
 }, { passive: false });
-
-let lastTap = 0;
-document.addEventListener('touchend', e => {
-  const now = Date.now();
-  if (now - lastTap < 300) e.preventDefault();
-  lastTap = now;
-}, false);
 
 // ============ PWA SERVICE WORKER ============
 if ('serviceWorker' in navigator) {
