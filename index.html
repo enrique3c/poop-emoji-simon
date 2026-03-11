@@ -206,7 +206,7 @@ html, body {
 /* Emoji grid */
 .emoji-grid {
   position: absolute;
-  bottom: 20px; left: 10px; right: 10px;
+  bottom: 50px; left: 10px; right: 10px;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 10px;
@@ -214,6 +214,7 @@ html, body {
   max-width: 360px;
   margin: 0 auto;
   padding: 0 10px;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 .emoji-btn {
   aspect-ratio: 1;
@@ -247,7 +248,7 @@ html, body {
   color: #888; margin-top: 2px;
   text-transform: uppercase; letter-spacing: 0.5px;
 }
-.emoji-btn.disabled { opacity: 0.4; pointer-events: none; }
+.emoji-btn.disabled { opacity: 0.4; }
 
 /* Power-ups bar */
 .powerup-bar {
@@ -734,14 +735,17 @@ function buildGrid() {
     btn.className = 'emoji-btn disabled';
     btn.innerHTML = `<span style="line-height:1">${ch.emoji}</span><span class="emoji-name">${ch.name}</span>`;
     btn.dataset.index = i;
-    // Use touchstart on mobile for instant response, click as fallback for desktop
-    let tapped = false;
-    btn.addEventListener('touchstart', (e) => {
+    // Unified tap handler for both mobile and desktop
+    function onTap(e) {
       e.preventDefault();
-      if (!tapped) { tapped = true; handleTap(i); setTimeout(() => tapped = false, 300); }
-    }, { passive: false });
-    btn.addEventListener('click', (e) => {
-      if (!tapped) handleTap(i);
+      e.stopPropagation();
+      if (btn.classList.contains('disabled')) return;
+      handleTap(i);
+    }
+    btn.addEventListener('touchend', onTap, { passive: false });
+    btn.addEventListener('mouseup', (e) => {
+      // Only fire on desktop (no touch support) to avoid double-firing
+      if (!('ontouchend' in window)) onTap(e);
     });
     grid.appendChild(btn);
   });
