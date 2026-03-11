@@ -1,11 +1,11 @@
-const CACHE_NAME = 'poop-simon-v1';
+const CACHE_NAME = 'bathroom-arcade-v2';
 const ASSETS = [
   './',
   './index.html',
   './manifest.json',
   './icon-192.png',
   './icon-512.png',
-  'https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap'
+  'https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap'
 ];
 
 self.addEventListener('install', e => {

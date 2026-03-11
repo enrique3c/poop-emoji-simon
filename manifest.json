@@ -1,12 +1,12 @@
 {
-  "name": "Poop Emoji Simon",
-  "short_name": "Poop Simon",
-  "description": "Train your brain. One flush at a time. A ridiculously serious brain-training game.",
+  "name": "Bathroom Brain Arcade",
+  "short_name": "Brain Arcade",
+  "description": "A retro mini-game collection. Train your brain. One flush at a time.",
   "start_url": ".",
   "display": "fullscreen",
   "orientation": "portrait",
-  "background_color": "#E8F8FF",
-  "theme_color": "#4EC5F1",
+  "background_color": "#1a1a2e",
+  "theme_color": "#1a1a2e",
   "categories": ["games", "entertainment"],
   "icons": [
     { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },

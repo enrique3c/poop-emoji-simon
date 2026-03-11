@@ -3,1067 +3,812 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
-<title>Poop Emoji Simon 🚽🧠</title>
-
-<!-- PWA & Mobile App -->
+<title>Bathroom Brain Arcade 🚽🧠</title>
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#4EC5F1">
+<meta name="theme-color" content="#1a1a2e">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Poop Simon">
+<meta name="apple-mobile-web-app-title" content="Brain Arcade">
 <link rel="apple-touch-icon" href="icon-192.png">
-
-<!-- Open Graph / Social Sharing -->
-<meta property="og:title" content="Poop Emoji Simon 🚽🧠">
-<meta property="og:description" content="Train your brain. One flush at a time. A ridiculously serious brain-training game for the least serious moment of your day.">
+<meta property="og:title" content="Bathroom Brain Arcade 🚽🧠">
+<meta property="og:description" content="Train your brain. One flush at a time. A retro mini-game collection for the least serious moment of your day.">
 <meta property="og:image" content="og-image.png">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Poop Emoji Simon 🚽🧠">
+<meta name="twitter:title" content="Bathroom Brain Arcade 🚽🧠">
 <meta name="twitter:description" content="Train your brain. One flush at a time.">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+:root{
+--blue:#4EC5F1;--yellow:#FFD84D;--brown:#8B4513;--pink:#FF6FB5;--green:#7EE7C1;
+--red:#E84F4F;--dark:#1a1a2e;--tile:#2a2a4e;--white:#f0f0f0;
+}
+html,body{width:100%;height:100%;overflow:hidden;font-family:'Press Start 2P',monospace;background:var(--dark);color:var(--white);touch-action:manipulation;}
+button{font-family:'Press Start 2P',monospace;touch-action:manipulation;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;}
 
-* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+/* ====== RETRO TILE BG ====== */
+#app{width:100%;height:100%;position:relative;overflow:hidden;}
+.retro-bg{position:absolute;inset:0;z-index:0;overflow:hidden;}
+.retro-bg canvas{width:100%;height:100%;}
 
-:root {
-  --toilet-blue: #4EC5F1;
-  --duck-yellow: #FFD84D;
-  --poop-brown: #8B4513;
-  --bubblegum-pink: #FF6FB5;
-  --mint-green: #7EE7C1;
-  --bg-light: #E8F8FF;
-  --bg-tile: #D4F1FF;
-}
+/* ====== SCREENS ====== */
+.screen{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:10;transition:opacity 0.4s;padding:16px;text-align:center;}
+.screen.hidden{opacity:0;pointer-events:none;}
 
-html, body {
-  width: 100%; height: 100%;
-  overflow: hidden;
-  font-family: 'Nunito', sans-serif;
-  background: var(--bg-light);
-  touch-action: manipulation;
+/* ====== RETRO BUTTON ====== */
+.rbtn{
+border:3px solid var(--white);border-radius:4px;padding:10px 20px;font-size:10px;cursor:pointer;
+background:var(--dark);color:var(--white);position:relative;
+box-shadow:0 4px 0 var(--white);transition:transform 0.1s,box-shadow 0.1s;
+text-transform:uppercase;letter-spacing:1px;line-height:1.4;
 }
+.rbtn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--white);}
+.rbtn-yellow{background:var(--yellow);color:var(--brown);border-color:var(--brown);box-shadow:0 4px 0 var(--brown);}
+.rbtn-yellow:active{box-shadow:0 1px 0 var(--brown);}
+.rbtn-blue{background:var(--blue);color:var(--dark);border-color:#2a8ab5;box-shadow:0 4px 0 #2a8ab5;}
+.rbtn-blue:active{box-shadow:0 1px 0 #2a8ab5;}
+.rbtn-pink{background:var(--pink);color:var(--dark);border-color:#c44f8a;box-shadow:0 4px 0 #c44f8a;}
+.rbtn-pink:active{box-shadow:0 1px 0 #c44f8a;}
+.rbtn-green{background:var(--green);color:var(--dark);border-color:#4fb58a;box-shadow:0 4px 0 #4fb58a;}
+.rbtn-green:active{box-shadow:0 1px 0 #4fb58a;}
+.rbtn-red{background:var(--red);color:var(--white);border-color:#a03030;box-shadow:0 4px 0 #a03030;}
+.rbtn-red:active{box-shadow:0 1px 0 #a03030;}
+.rbtn:disabled{opacity:0.3;}
 
-#game-container {
-  width: 100%; height: 100%;
-  position: relative;
-  overflow: hidden;
-  background: linear-gradient(180deg, #D4F1FF 0%, #E8F8FF 50%, #D4F1FF 100%);
-}
+/* ====== INTRO SCREEN ====== */
+#intro .intro-toilet{font-size:64px;animation:toilet-bob 1s ease-in-out infinite;}
+@keyframes toilet-bob{0%,100%{transform:translateY(0);}50%{transform:translateY(-10px);}}
+#intro .intro-duck{font-size:48px;animation:duck-jump 0.6s ease-in-out infinite;position:relative;top:-20px;}
+@keyframes duck-jump{0%,100%{transform:translateY(0) rotate(-5deg);}50%{transform:translateY(-20px) rotate(5deg);}}
+.intro-title{font-size:clamp(14px,4vw,22px);color:var(--yellow);text-shadow:2px 2px 0 var(--brown);margin:12px 0;line-height:1.6;}
+.intro-sub{font-size:clamp(7px,2vw,9px);color:var(--blue);max-width:300px;line-height:2;margin:10px 0 20px;}
+.intro-btns{display:flex;flex-direction:column;gap:12px;}
+.intro-ignore{font-size:7px;color:#555;margin-top:12px;cursor:pointer;text-decoration:underline;}
+.intro-ignore:hover{color:#888;}
 
-/* Bathroom tile pattern */
-.tile-bg {
-  position: absolute; inset: 0;
-  background-image:
-    linear-gradient(rgba(78,197,241,0.08) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(78,197,241,0.08) 1px, transparent 1px);
-  background-size: 40px 40px;
-  pointer-events: none; z-index: 0;
-}
+/* ====== PIXEL BUBBLES ====== */
+.pbubble{position:absolute;width:6px;height:6px;background:rgba(78,197,241,0.3);border:1px solid rgba(78,197,241,0.4);border-radius:1px;animation:pbub linear infinite;pointer-events:none;z-index:1;}
+@keyframes pbub{0%{transform:translateY(0);opacity:0.6;}100%{transform:translateY(-100vh);opacity:0;}}
 
-/* Floating bubbles */
-.bubble {
-  position: absolute;
-  border-radius: 50%;
-  background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.8), rgba(78,197,241,0.15));
-  border: 1px solid rgba(78,197,241,0.2);
-  animation: float-up linear infinite;
-  pointer-events: none; z-index: 0;
+/* ====== HUB SCREEN ====== */
+.hub-title{font-size:clamp(10px,3vw,14px);color:var(--yellow);text-shadow:2px 2px 0 var(--brown);margin-bottom:16px;}
+.hub-score{font-size:8px;color:var(--green);margin-bottom:16px;}
+.game-cards{display:flex;flex-direction:column;gap:12px;width:100%;max-width:320px;}
+.game-card{
+background:var(--tile);border:3px solid var(--blue);border-radius:6px;padding:14px;cursor:pointer;
+transition:transform 0.1s;display:flex;align-items:center;gap:12px;text-align:left;
 }
-@keyframes float-up {
-  0% { transform: translateY(100vh) scale(0.5); opacity: 0; }
-  10% { opacity: 0.7; }
-  90% { opacity: 0.4; }
-  100% { transform: translateY(-20vh) scale(1.2); opacity: 0; }
-}
+.game-card:active{transform:scale(0.97);}
+.game-card .gc-icon{font-size:36px;flex-shrink:0;}
+.game-card .gc-info{flex:1;}
+.game-card .gc-name{font-size:9px;color:var(--yellow);margin-bottom:4px;}
+.game-card .gc-desc{font-size:7px;color:var(--blue);line-height:1.8;}
+.game-card .gc-best{font-size:6px;color:var(--green);margin-top:4px;}
 
-/* Screens */
-.screen {
-  position: absolute; inset: 0;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  z-index: 10;
-  transition: opacity 0.4s, transform 0.4s;
-  padding: 20px;
+/* ====== SHARED GAME HEADER ====== */
+.g-header{
+position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;
+padding:8px 12px;z-index:20;background:rgba(26,26,46,0.9);border-bottom:2px solid var(--blue);
 }
-.screen.hidden {
-  opacity: 0; pointer-events: none;
-  transform: scale(0.95);
-}
+.g-header .g-title{font-size:7px;color:var(--yellow);}
+.g-header .g-score{font-size:8px;color:var(--green);}
+.g-header .g-back{font-size:7px;color:var(--pink);cursor:pointer;padding:4px;}
 
-/* Title screen */
-.title-emoji { font-size: 80px; animation: title-bounce 1.5s ease-in-out infinite; }
-@keyframes title-bounce {
-  0%,100% { transform: translateY(0) rotate(-5deg); }
-  50% { transform: translateY(-15px) rotate(5deg); }
+/* ====== GAME 1: POOP EMOJI SIMON ====== */
+.simon-display{font-size:64px;height:90px;display:flex;align-items:center;justify-content:center;margin-top:50px;}
+.simon-display.wiggle{animation:swiggle 0.4s ease-in-out;}
+@keyframes swiggle{0%,100%{transform:rotate(0) scale(1);}25%{transform:rotate(-12deg) scale(1.15);}75%{transform:rotate(12deg) scale(1.2);}}
+.simon-msg{font-size:clamp(7px,2vw,9px);color:var(--blue);min-height:20px;margin:8px 0;line-height:1.8;}
+.simon-dots{display:flex;justify-content:center;gap:5px;flex-wrap:wrap;margin:4px 0;}
+.sdot{width:8px;height:8px;background:var(--tile);border:1px solid #444;border-radius:1px;transition:all 0.2s;}
+.sdot.done{background:var(--green);border-color:var(--green);}
+.sdot.cur{background:var(--yellow);border-color:var(--yellow);animation:dotpulse 0.5s infinite;}
+@keyframes dotpulse{0%,100%{transform:scale(1);}50%{transform:scale(1.4);}}
+.sdot.wrong{background:var(--red);border-color:var(--red);}
+.simon-grid{
+display:grid;gap:8px;width:100%;max-width:320px;margin:0 auto;
+padding:0 8px;padding-bottom:env(safe-area-inset-bottom,0px);
 }
-.game-title {
-  font-family: 'Fredoka One', cursive;
-  font-size: clamp(28px, 7vw, 48px);
-  color: var(--poop-brown);
-  text-shadow: 2px 2px 0 var(--duck-yellow), 4px 4px 0 rgba(0,0,0,0.1);
-  text-align: center; margin: 10px 0;
+.simon-btn{
+border:3px solid rgba(255,255,255,0.2);border-radius:6px;font-size:clamp(28px,9vw,44px);
+cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;
+background:var(--tile);aspect-ratio:1;transition:transform 0.1s;position:relative;
 }
-.game-subtitle {
-  font-size: clamp(13px, 3.5vw, 18px);
-  color: #6B8A99; text-align: center;
-  max-width: 320px; line-height: 1.4;
-  margin-bottom: 20px;
-}
-.tagline {
-  font-family: 'Fredoka One', cursive;
-  font-size: clamp(11px, 3vw, 15px);
-  color: var(--bubblegum-pink);
-  margin-top: 15px;
-}
+.simon-btn .sname{font-size:6px;color:#888;margin-top:2px;text-transform:uppercase;}
+.simon-btn.disabled{opacity:0.3;}
+.simon-btn.flash{animation:sflash 0.35s ease-out;}
+@keyframes sflash{0%{background:var(--yellow);transform:scale(1.08);border-color:var(--yellow);}100%{background:var(--tile);transform:scale(1);}}
+.simon-btn.wrong{animation:swrong 0.35s;background:var(--red);}
+@keyframes swrong{0%,100%{transform:translateX(0);}25%{transform:translateX(-6px);}75%{transform:translateX(6px);}}
 
-/* Buttons */
-.btn {
-  font-family: 'Fredoka One', cursive;
-  border: none; border-radius: 20px;
-  padding: 14px 36px; font-size: 18px;
-  cursor: pointer; position: relative;
-  transition: transform 0.15s, box-shadow 0.15s;
-  box-shadow: 0 4px 0 rgba(0,0,0,0.15), 0 6px 20px rgba(0,0,0,0.1);
-  text-transform: uppercase; letter-spacing: 1px;
+/* ====== GAME 2: FLUSH THAT MEMORY ====== */
+.flush-bowl{
+width:220px;height:220px;border-radius:50%;border:4px solid var(--blue);
+background:radial-gradient(circle,#1a3a5e,var(--dark));margin:50px auto 10px;
+display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:6px;padding:20px;
+position:relative;overflow:hidden;
 }
-.btn:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(0,0,0,0.15); }
-.btn, .emoji-btn, .powerup-btn { touch-action: manipulation; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
-.btn-primary {
-  background: linear-gradient(135deg, var(--duck-yellow), #FFC107);
-  color: var(--poop-brown);
+.flush-bowl.flushing{animation:flushspin 1s ease-in-out;}
+@keyframes flushspin{0%{transform:rotate(0) scale(1);}50%{transform:rotate(360deg) scale(0.7);}100%{transform:rotate(720deg) scale(1);}}
+.flush-item{font-size:32px;transition:all 0.4s;animation:fbob 1.5s ease-in-out infinite;}
+@keyframes fbob{0%,100%{transform:translateY(0);}50%{transform:translateY(-4px);}}
+.flush-item.vanish{opacity:0;transform:scale(0) rotate(360deg);}
+.flush-msg{font-size:clamp(7px,2vw,9px);color:var(--yellow);margin:8px 0;line-height:1.8;min-height:24px;}
+.flush-options{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;max-width:300px;width:100%;padding:0 16px;}
+.flush-opt{
+border:3px solid var(--blue);border-radius:6px;background:var(--tile);padding:12px;
+font-size:28px;cursor:pointer;transition:transform 0.1s;text-align:center;
 }
-.btn-mode {
-  background: linear-gradient(135deg, var(--toilet-blue), #3AAFDB);
-  color: white; font-size: 14px; padding: 10px 24px; margin: 5px;
-  border-radius: 15px;
-}
-.btn-pink {
-  background: linear-gradient(135deg, var(--bubblegum-pink), #E84F95);
-  color: white;
-}
-.btn-green {
-  background: linear-gradient(135deg, var(--mint-green), #5CC9A1);
-  color: #2D6B4F;
-}
-.mode-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 10px 0; max-width: 340px; }
+.flush-opt:active{transform:scale(0.95);}
+.flush-opt.correct{border-color:var(--green);background:#1a3a2e;}
+.flush-opt.incorrect{border-color:var(--red);background:#3a1a1a;}
+.flush-opt.disabled{opacity:0.4;}
+.flush-round{font-size:7px;color:var(--green);margin-top:40px;margin-bottom:4px;}
 
-/* Game screen */
-.game-header {
-  position: absolute; top: 0; left: 0; right: 0;
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 12px 16px; z-index: 20;
-  background: rgba(255,255,255,0.85);
-  backdrop-filter: blur(8px);
-  border-bottom: 2px solid rgba(78,197,241,0.2);
+/* ====== GAME 3: TOILET PAPER PANIC ====== */
+.tp-grid{
+display:grid;gap:6px;max-width:320px;width:100%;margin:10px auto;padding:0 8px;
 }
-.level-badge {
-  font-family: 'Fredoka One', cursive;
-  background: linear-gradient(135deg, var(--bubblegum-pink), #E84F95);
-  color: white; padding: 4px 14px; border-radius: 20px;
-  font-size: 14px;
+.tp-card{
+aspect-ratio:1;border:3px solid var(--blue);border-radius:4px;background:var(--tile);
+cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:clamp(22px,7vw,36px);
+transition:transform 0.3s,background 0.3s;position:relative;
 }
-.score-display {
-  font-family: 'Fredoka One', cursive;
-  color: var(--poop-brown); font-size: 16px;
-}
-.mode-label {
-  font-size: 11px; color: var(--toilet-blue);
-  font-weight: 700; text-transform: uppercase;
-}
+.tp-card.face-down{background:repeating-linear-gradient(45deg,var(--tile),var(--tile) 4px,#3a3a5e 4px,#3a3a5e 8px);}
+.tp-card.face-down::after{content:'🧻';font-size:16px;}
+.tp-card.matched{border-color:var(--green);background:#1a3a2e;opacity:0.6;}
+.tp-card.peek{background:var(--tile);}
+.tp-card.wrong-match{border-color:var(--red);background:#3a1a1a;}
+.tp-card.disabled{opacity:0.5;}
+.tp-msg{font-size:clamp(7px,2vw,9px);color:var(--yellow);margin-top:44px;margin-bottom:6px;line-height:1.8;min-height:20px;}
+.tp-stats{font-size:7px;color:var(--green);margin:4px 0;}
 
-/* Sequence display area */
-.sequence-area {
-  position: absolute;
-  top: 60px; left: 0; right: 0;
-  height: 140px;
-  display: flex; align-items: center; justify-content: center;
-  z-index: 15;
+/* ====== FAIL OVERLAY ====== */
+.fail-overlay{
+position:absolute;inset:0;background:rgba(0,0,0,0.8);display:flex;flex-direction:column;
+align-items:center;justify-content:center;z-index:50;
 }
-.sequence-display {
-  font-size: 60px;
-  transition: transform 0.3s, opacity 0.3s;
+.fail-overlay.hidden{display:none;}
+.fail-judge{font-size:80px;animation:judgeslide 0.7s cubic-bezier(0.34,1.56,0.64,1);}
+@keyframes judgeslide{0%{transform:translateY(150px);opacity:0;}100%{transform:translateY(0);opacity:1;}}
+.fail-text{font-size:clamp(8px,2.5vw,11px);color:var(--white);margin:12px 16px;line-height:2;text-align:center;}
+.score-card{
+background:var(--tile);border:3px solid var(--blue);border-radius:8px;padding:20px;
+max-width:280px;width:90%;text-align:center;
 }
-.sequence-display.wiggle { animation: wiggle 0.5s ease-in-out; }
-@keyframes wiggle {
-  0%,100% { transform: rotate(0) scale(1); }
-  25% { transform: rotate(-15deg) scale(1.2); }
-  75% { transform: rotate(15deg) scale(1.3); }
+.sc-label{font-size:6px;color:var(--blue);text-transform:uppercase;letter-spacing:2px;margin-bottom:8px;}
+.sc-score{font-size:28px;color:var(--yellow);margin:4px 0;}
+.sc-detail{font-size:7px;color:var(--green);margin:3px 0;line-height:1.8;}
+.sc-detail span{color:var(--yellow);}
+.sc-achieve{
+display:inline-block;background:var(--yellow);color:var(--brown);border:2px solid var(--brown);
+border-radius:4px;padding:4px 10px;font-size:7px;margin:6px 2px;
 }
+.sc-btns{display:flex;gap:8px;justify-content:center;margin-top:12px;flex-wrap:wrap;}
 
-.message-banner {
-  position: absolute;
-  top: 200px; left: 20px; right: 20px;
-  text-align: center;
-  font-family: 'Fredoka One', cursive;
-  font-size: clamp(16px, 4vw, 22px);
-  color: var(--poop-brown);
-  z-index: 15;
-  transition: opacity 0.3s;
-  text-shadow: 1px 1px 0 rgba(255,255,255,0.8);
+/* ====== POWER-UPS ====== */
+.pu-bar{
+position:absolute;bottom:0;left:0;right:0;display:flex;justify-content:center;gap:6px;
+padding:6px 8px;background:rgba(26,26,46,0.9);z-index:20;border-top:2px solid var(--blue);
 }
+.pu-btn{
+border:2px solid var(--yellow);border-radius:4px;padding:4px 8px;font-size:7px;
+cursor:pointer;background:var(--dark);color:var(--yellow);display:flex;align-items:center;gap:3px;
+}
+.pu-btn:disabled{opacity:0.2;border-color:#555;color:#555;}
+.pu-cnt{background:var(--pink);color:var(--white);border-radius:2px;padding:1px 4px;font-size:6px;}
 
-/* Emoji grid */
-.emoji-grid {
-  position: absolute;
-  bottom: 50px; left: 10px; right: 10px;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  z-index: 15;
-  max-width: 360px;
-  margin: 0 auto;
-  padding: 0 10px;
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-}
-.emoji-btn {
-  aspect-ratio: 1;
-  border: none; border-radius: 18px;
-  font-size: clamp(32px, 10vw, 48px);
-  cursor: pointer;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  transition: transform 0.1s, box-shadow 0.1s;
-  box-shadow: 0 4px 0 rgba(0,0,0,0.1), 0 4px 15px rgba(0,0,0,0.08);
-  position: relative;
-  background: rgba(255,255,255,0.9);
-  backdrop-filter: blur(4px);
-}
-.emoji-btn:active { transform: scale(0.92) translateY(2px); }
-.emoji-btn.flash {
-  animation: emoji-flash 0.4s ease-out;
-}
-@keyframes emoji-flash {
-  0% { background: rgba(255,216,77,0.8); transform: scale(1.1); }
-  100% { background: rgba(255,255,255,0.9); transform: scale(1); }
-}
-.emoji-btn.wrong { animation: shake 0.4s ease-out; background: rgba(255,100,100,0.3); }
-@keyframes shake {
-  0%,100% { transform: translateX(0); }
-  25% { transform: translateX(-8px); }
-  75% { transform: translateX(8px); }
-}
-.emoji-btn .emoji-name {
-  font-size: 8px; font-weight: 900;
-  color: #888; margin-top: 2px;
-  text-transform: uppercase; letter-spacing: 0.5px;
-}
-.emoji-btn.disabled { opacity: 0.4; }
-
-/* Power-ups bar */
-.powerup-bar {
-  position: absolute;
-  bottom: 0; left: 0; right: 0;
-  display: flex; justify-content: center; gap: 8px;
-  padding: 6px 10px;
-  background: rgba(255,255,255,0.8);
-  backdrop-filter: blur(8px);
-  z-index: 20;
-  border-top: 2px solid rgba(78,197,241,0.15);
-}
-.powerup-btn {
-  border: none; border-radius: 12px;
-  padding: 6px 12px; font-size: 11px;
-  font-family: 'Nunito', sans-serif; font-weight: 900;
-  cursor: pointer;
-  background: linear-gradient(135deg, #FFF3D4, #FFE9A8);
-  color: var(--poop-brown);
-  box-shadow: 0 2px 0 rgba(0,0,0,0.1);
-  transition: transform 0.1s;
-  display: flex; align-items: center; gap: 4px;
-}
-.powerup-btn:active { transform: scale(0.95); }
-.powerup-btn:disabled { opacity: 0.3; pointer-events: none; }
-.powerup-btn .pu-icon { font-size: 16px; }
-.powerup-count {
-  background: var(--bubblegum-pink); color: white;
-  border-radius: 50%; width: 16px; height: 16px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 10px;
-}
-
-/* Timer bar */
-.timer-bar-container {
-  position: absolute;
-  top: 54px; left: 0; right: 0;
-  height: 4px; z-index: 20;
-  background: rgba(0,0,0,0.05);
-}
-.timer-bar {
-  height: 100%;
-  background: linear-gradient(90deg, var(--mint-green), var(--duck-yellow), var(--bubblegum-pink));
-  transition: width 0.1s linear;
-  border-radius: 0 2px 2px 0;
-}
-
-/* Fail overlay */
-.fail-overlay {
-  position: absolute; inset: 0;
-  background: rgba(0,0,0,0.6);
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  z-index: 50;
-  animation: fade-in 0.3s;
-}
-@keyframes fade-in { from { opacity: 0; } }
-.judge-toilet {
-  font-size: 100px;
-  animation: toilet-slide 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-@keyframes toilet-slide {
-  0% { transform: translateY(200px) rotate(10deg); opacity: 0; }
-  100% { transform: translateY(0) rotate(0); opacity: 1; }
-}
-.fail-message {
-  font-family: 'Fredoka One', cursive;
-  color: white; font-size: clamp(18px, 5vw, 26px);
-  text-align: center; margin: 15px 20px;
-  text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-}
-.flush-effect {
-  position: absolute; inset: 0;
-  background: radial-gradient(circle, transparent 30%, rgba(78,197,241,0.4) 100%);
-  animation: flush-spin 1s ease-in-out;
-  pointer-events: none;
-}
-@keyframes flush-spin {
-  0% { transform: rotate(0) scale(1); opacity: 1; }
-  100% { transform: rotate(720deg) scale(0); opacity: 0; }
-}
-
-/* Score card */
-.score-card {
-  background: white;
-  border-radius: 24px;
-  padding: 24px;
-  max-width: 320px; width: 90%;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.15);
-  text-align: center;
-  position: relative; overflow: hidden;
-}
-.score-card::before {
-  content: ''; position: absolute;
-  top: 0; left: 0; right: 0; height: 6px;
-  background: linear-gradient(90deg, var(--toilet-blue), var(--duck-yellow), var(--bubblegum-pink), var(--mint-green));
-}
-.mirror-label {
-  font-family: 'Fredoka One', cursive;
-  font-size: 11px; color: #AAA;
-  text-transform: uppercase; letter-spacing: 2px;
-  margin-bottom: 10px;
-}
-.flush-score {
-  font-family: 'Fredoka One', cursive;
-  font-size: 48px; color: var(--poop-brown);
-}
-.score-detail {
-  font-size: 14px; color: #777;
-  margin: 3px 0;
-}
-.score-detail span { font-weight: 900; color: var(--poop-brown); }
-.achievement-pop {
-  background: linear-gradient(135deg, var(--duck-yellow), #FFC107);
-  border-radius: 12px; padding: 8px 16px;
-  margin: 10px 0; display: inline-block;
-  font-family: 'Fredoka One', cursive;
-  font-size: 13px; color: var(--poop-brown);
-}
-.score-buttons { display: flex; gap: 8px; justify-content: center; margin-top: 15px; flex-wrap: wrap; }
-
-/* Chaos mode effects */
-.chaos .emoji-btn { animation: chaos-wobble 0.6s ease-in-out infinite; }
-@keyframes chaos-wobble {
-  0%,100% { transform: rotate(-3deg); }
-  50% { transform: rotate(3deg); }
-}
-.chaos .emoji-btn:nth-child(odd) { animation-delay: 0.3s; }
-.drunk .emoji-btn { animation: drunk-wobble 1.2s ease-in-out infinite; }
-@keyframes drunk-wobble {
-  0%,100% { transform: translate(0,0) rotate(0); }
-  25% { transform: translate(3px,-2px) rotate(2deg); }
-  50% { transform: translate(-2px,3px) rotate(-3deg); }
-  75% { transform: translate(2px,1px) rotate(1deg); }
-}
-
-/* Progress dots */
-.progress-dots {
-  position: absolute;
-  top: 240px; left: 20px; right: 20px;
-  display: flex; justify-content: center; gap: 6px;
-  flex-wrap: wrap; z-index: 15;
-}
-.pdot {
-  width: 10px; height: 10px; border-radius: 50%;
-  background: rgba(0,0,0,0.1);
-  transition: background 0.2s, transform 0.2s;
-}
-.pdot.done { background: var(--mint-green); transform: scale(1.2); }
-.pdot.current { background: var(--duck-yellow); transform: scale(1.3); animation: pulse-dot 0.6s infinite; }
-@keyframes pulse-dot { 0%,100% { transform: scale(1.3); } 50% { transform: scale(1); } }
-.pdot.wrong { background: var(--bubblegum-pink); }
-
-/* Daily challenge badge */
-.daily-badge {
-  background: linear-gradient(135deg, #9B59B6, #8E44AD);
-  color: white; padding: 8px 16px; border-radius: 12px;
-  font-family: 'Fredoka One', cursive; font-size: 13px;
-  margin-bottom: 10px; text-align: center;
-}
-
-/* Responsive adjustments */
-@media (max-height: 700px) {
-  .sequence-area { height: 100px; top: 56px; }
-  .sequence-display { font-size: 50px; }
-  .message-banner { top: 160px; }
-  .progress-dots { top: 195px; }
-  .emoji-grid { gap: 6px; }
-  .emoji-btn { font-size: clamp(28px, 8vw, 40px); }
-}
-@media (max-height: 600px) {
-  .emoji-grid { bottom: 10px; gap: 4px; }
-  .powerup-bar { display: none; }
-}
+/* ====== RESPONSIVE ====== */
+@media(max-height:700px){.simon-display{font-size:50px;height:70px;margin-top:42px;}.flush-bowl{width:180px;height:180px;margin-top:42px;}}
+@media(max-height:600px){.pu-bar{display:none;}.simon-grid{gap:4px;}.flush-bowl{width:150px;height:150px;}}
 </style>
 </head>
 <body>
-<div id="game-container">
-  <div class="tile-bg"></div>
-  <div id="bubbles"></div>
+<div id="app">
+<div class="retro-bg"><canvas id="bgCanvas"></canvas></div>
+<div id="bubbles-container"></div>
 
-  <!-- TITLE SCREEN -->
-  <div id="title-screen" class="screen">
-    <div class="title-emoji">💩</div>
-    <div class="game-title">Poop Emoji<br>Simon</div>
-    <div class="game-subtitle">This game improves memory… or at least distracts you while you poop.</div>
-    <button class="btn btn-primary" onclick="showModeSelect()" style="font-size:20px;">🧠 Engage Brain</button>
-    <div class="tagline">Train your brain. One flush at a time.</div>
+<!-- ====== INTRO SCREEN ====== -->
+<div id="intro" class="screen">
+  <div class="intro-toilet">🚽</div>
+  <div class="intro-duck">🦆</div>
+  <div class="intro-title">BATHROOM<br>BRAIN ARCADE</div>
+  <div class="intro-sub">This game improves memory… or at least distracts you while you poop.</div>
+  <div class="intro-btns">
+    <button class="rbtn rbtn-yellow" id="btn-engage">🧠 Engage Brain</button>
   </div>
+  <div class="intro-ignore" id="btn-ignore">Ignore Brain</div>
+  <div style="font-size:6px;color:#555;margin-top:16px;">Train your brain. One flush at a time.</div>
+</div>
 
-  <!-- MODE SELECT -->
-  <div id="mode-screen" class="screen hidden">
-    <div style="font-size:50px;margin-bottom:10px;">🚽</div>
-    <div class="game-title" style="font-size:clamp(22px,5vw,32px);">Choose Your Throne</div>
-    <div class="mode-grid">
-      <button class="btn btn-mode" onclick="startGame('classic')">🎯 Classic</button>
-      <button class="btn btn-mode" onclick="startGame('panic')">⏱️ Panic</button>
-      <button class="btn btn-mode" onclick="startGame('drunk')">🦆 Drunk Duck</button>
-      <button class="btn btn-mode" onclick="startGame('endless')">♾️ Endless</button>
-      <button class="btn btn-mode" onclick="startGame('daily')" style="background:linear-gradient(135deg,#9B59B6,#8E44AD);">📅 Daily</button>
-    </div>
-    <button class="btn btn-pink" onclick="showTitle()" style="font-size:14px;margin-top:10px;">← Back</button>
-  </div>
-
-  <!-- GAME SCREEN -->
-  <div id="game-screen" class="screen hidden">
-    <div class="game-header">
-      <div class="level-badge" id="level-badge">LVL 1</div>
-      <div class="mode-label" id="mode-name">CLASSIC</div>
-      <div class="score-display" id="score-display">💩 0</div>
-    </div>
-    <div class="timer-bar-container" id="timer-container" style="display:none;">
-      <div class="timer-bar" id="timer-bar" style="width:100%"></div>
-    </div>
-    <div class="sequence-area">
-      <div class="sequence-display" id="sequence-display"></div>
-    </div>
-    <div class="message-banner" id="message-banner"></div>
-    <div class="progress-dots" id="progress-dots"></div>
-    <div class="emoji-grid" id="emoji-grid"></div>
-    <div class="powerup-bar" id="powerup-bar">
-      <button class="powerup-btn" id="pu-plunger" onclick="usePowerUp('plunger')">
-        <span class="pu-icon">🪠</span> Plunger <span class="powerup-count" id="pu-plunger-count">1</span>
-      </button>
-      <button class="powerup-btn" id="pu-replay" onclick="usePowerUp('replay')">
-        <span class="pu-icon">🧴</span> Replay <span class="powerup-count" id="pu-replay-count">1</span>
-      </button>
-      <button class="powerup-btn" id="pu-hint" onclick="usePowerUp('hint')">
-        <span class="pu-icon">🦆</span> Hint <span class="powerup-count" id="pu-hint-count">1</span>
-      </button>
-    </div>
-  </div>
-
-  <!-- FAIL / SCORE OVERLAY -->
-  <div id="fail-overlay" class="fail-overlay hidden" style="display:none;">
-    <div class="flush-effect" id="flush-fx"></div>
-    <div class="judge-toilet" id="judge-emoji">🚽</div>
-    <div class="fail-message" id="fail-message"></div>
-    <div class="score-card" id="score-card" style="display:none;">
-      <div class="mirror-label">🪞 Bathroom Mirror Scoreboard</div>
-      <div style="font-size:14px;color:#AAA;margin-bottom:4px;">Brain Flush Score</div>
-      <div class="flush-score" id="final-score">0</div>
-      <div class="score-detail">Memory: <span id="stat-memory">0/10</span></div>
-      <div class="score-detail">Focus: <span id="stat-focus">0/10</span></div>
-      <div class="score-detail">Bathroom Confidence: <span id="stat-confidence">questionable</span></div>
-      <div id="achievement-area"></div>
-      <div class="score-buttons">
-        <button class="btn btn-primary" onclick="restartGame()" style="font-size:14px;padding:10px 20px;">🔄 Again</button>
-        <button class="btn btn-green" onclick="shareScore()" style="font-size:14px;padding:10px 20px;">📤 Share</button>
-        <button class="btn btn-pink" onclick="showTitle()" style="font-size:14px;padding:10px 20px;">🏠 Home</button>
+<!-- ====== HUB SCREEN ====== -->
+<div id="hub" class="screen hidden">
+  <div class="hub-title">🕹️ SELECT GAME</div>
+  <div class="hub-score" id="hub-total">Brain Flush Points: 0</div>
+  <div class="game-cards">
+    <div class="game-card" id="card-simon">
+      <div class="gc-icon">💩</div>
+      <div class="gc-info">
+        <div class="gc-name">Poop Emoji Simon</div>
+        <div class="gc-desc">Remember the sequence!</div>
+        <div class="gc-best" id="best-simon">Best: --</div>
       </div>
+    </div>
+    <div class="game-card" id="card-flush">
+      <div class="gc-icon">🚽</div>
+      <div class="gc-info">
+        <div class="gc-name">Flush That Memory</div>
+        <div class="gc-desc">What got flushed?</div>
+        <div class="gc-best" id="best-flush">Best: --</div>
+      </div>
+    </div>
+    <div class="game-card" id="card-tp">
+      <div class="gc-icon">🧻</div>
+      <div class="gc-info">
+        <div class="gc-name">Toilet Paper Panic</div>
+        <div class="gc-desc">Match the pairs!</div>
+        <div class="gc-best" id="best-tp">Best: --</div>
+      </div>
+    </div>
+  </div>
+  <div style="margin-top:12px;display:flex;flex-wrap:wrap;justify-content:center;gap:4px;" id="hub-achieve"></div>
+</div>
+
+<!-- ====== GAME 1: SIMON ====== -->
+<div id="game-simon" class="screen hidden">
+  <div class="g-header">
+    <div class="g-back" id="simon-back">◄ BACK</div>
+    <div class="g-title">POOP SIMON</div>
+    <div class="g-score" id="simon-score">💩 0</div>
+  </div>
+  <div class="simon-display" id="simon-display"></div>
+  <div class="simon-msg" id="simon-msg"></div>
+  <div class="simon-dots" id="simon-dots"></div>
+  <div class="simon-grid" id="simon-grid"></div>
+  <div class="pu-bar" id="simon-pu">
+    <button class="pu-btn" id="pu-plunger">🪠 <span class="pu-cnt" id="pu-plunger-c">1</span></button>
+    <button class="pu-btn" id="pu-replay">🧴 <span class="pu-cnt" id="pu-replay-c">1</span></button>
+    <button class="pu-btn" id="pu-hint">🦆 <span class="pu-cnt" id="pu-hint-c">1</span></button>
+  </div>
+</div>
+
+<!-- ====== GAME 2: FLUSH ====== -->
+<div id="game-flush" class="screen hidden">
+  <div class="g-header">
+    <div class="g-back" id="flush-back">◄ BACK</div>
+    <div class="g-title">FLUSH MEMORY</div>
+    <div class="g-score" id="flush-score">🚽 0</div>
+  </div>
+  <div class="flush-round" id="flush-round">Round 1</div>
+  <div class="flush-bowl" id="flush-bowl"></div>
+  <div class="flush-msg" id="flush-msg"></div>
+  <div class="flush-options" id="flush-options"></div>
+</div>
+
+<!-- ====== GAME 3: TP PANIC ====== -->
+<div id="game-tp" class="screen hidden">
+  <div class="g-header">
+    <div class="g-back" id="tp-back">◄ BACK</div>
+    <div class="g-title">TP PANIC</div>
+    <div class="g-score" id="tp-score">🧻 0</div>
+  </div>
+  <div class="tp-msg" id="tp-msg"></div>
+  <div class="tp-stats" id="tp-stats"></div>
+  <div class="tp-grid" id="tp-grid"></div>
+</div>
+
+<!-- ====== FAIL / SCORE OVERLAY ====== -->
+<div id="fail-overlay" class="fail-overlay hidden">
+  <div class="fail-judge" id="fail-judge">🚽</div>
+  <div class="fail-text" id="fail-text"></div>
+  <div class="score-card" id="score-card" style="display:none;">
+    <div class="sc-label">🪞 Bathroom Mirror</div>
+    <div style="font-size:7px;color:var(--blue);margin:4px 0;">Brain Flush Score</div>
+    <div class="sc-score" id="sc-final">0</div>
+    <div class="sc-detail">Memory: <span id="sc-mem">0/10</span></div>
+    <div class="sc-detail">Focus: <span id="sc-foc">0/10</span></div>
+    <div class="sc-detail">Confidence: <span id="sc-conf">questionable</span></div>
+    <div id="sc-achieves"></div>
+    <div class="sc-btns">
+      <button class="rbtn rbtn-yellow" id="sc-retry" style="font-size:8px;padding:8px 14px;">🔄 Again</button>
+      <button class="rbtn rbtn-green" id="sc-share" style="font-size:8px;padding:8px 14px;">📤 Share</button>
+      <button class="rbtn rbtn-pink" id="sc-home" style="font-size:8px;padding:8px 14px;">🏠 Hub</button>
     </div>
   </div>
 </div>
 
+</div>
+
 <script>
-// ============ EMOJI CHARACTERS ============
-const CHARACTERS = [
-  { emoji: '💩', name: 'King Poop', sound: 'plop', tapMsg: "You remembered me! I'm honored.", color: '#8B4513' },
-  { emoji: '🦆', name: 'Sir Quacks', sound: 'quack', tapMsg: "QUAAACK!", color: '#FFD84D' },
-  { emoji: '🍕', name: 'Party Pizza', sound: 'disco', tapMsg: "🕺 Pizza time!", color: '#FF6347' },
-  { emoji: '🚽', name: 'The Judge', sound: 'flush', tapMsg: "Order in the bathroom!", color: '#4EC5F1' },
-  { emoji: '🧻', name: 'TP Ninja', sound: 'swoosh', tapMsg: "HI-YAH!", color: '#F5F5DC' },
-  { emoji: '🐸', name: 'Bath Frog', sound: 'croak', tapMsg: "Ribbit, my dude.", color: '#7EE7C1' },
-  { emoji: '🧦', name: 'Lost Sock', sound: 'sniff', tapMsg: "I smell... terrible.", color: '#9B9B9B' },
-  { emoji: '🦠', name: 'Germ Boss', sound: 'evil', tapMsg: "Mwahaha!", color: '#ADFF2F' },
-  { emoji: '🐙', name: 'Sink Octo', sound: 'splash', tapMsg: "Wrong sink, buddy.", color: '#E84F95' },
-];
-
-const FAIL_MESSAGES = [
-  "That was embarrassing.",
-  "My pipes have seen smarter humans.",
-  "Did you forget already?",
-  "You had ONE job.",
-  "Maybe stick to breathing.",
-  "Even the soap is disappointed.",
-  "The toilet paper could do better.",
-  "I'm flushing your dignity now.",
-  "Your memory has left the bathroom.",
-  "The rubber duck is crying.",
-];
-
-const SUCCESS_MESSAGES = [
-  "Your brain is working! Suspicious!",
-  "Not bad for a bathroom break!",
-  "King Poop approves! 👑",
-  "Sir Quacksalot nods respectfully.",
-  "The toilet is mildly impressed.",
-  "Even the germs are clapping.",
-  "Your neurons are on fire! 🔥",
-  "Bathroom genius detected!",
-];
-
-const ACHIEVEMENTS = {
-  solid: { name: "Solid Performance", desc: "Score 20", icon: "💪", threshold: 20 },
-  plumbing: { name: "Brain Plumbing", desc: "Score 40", icon: "🔧", threshold: 40 },
-  royal: { name: "The Royal Flush", desc: "Score 100", icon: "👑", threshold: 100 },
-  einstein: { name: "Bathroom Einstein", desc: "20 perfect rounds", icon: "🧠", rounds: 20 },
-  forgotten: { name: "The Forgotten", desc: "Lose on level 2", icon: "💀", failLevel: 2 },
+// ===================== GLOBAL STATE =====================
+const G = {
+  totalPoints: 0, bestSimon: 0, bestFlush: 0, bestTP: 0,
+  achievements: new Set(), currentGame: null,
 };
-
-const CONFIDENCE_LEVELS = [
-  "non-existent", "questionable", "shaky", "building", "decent",
-  "solid", "confident", "impressive", "legendary", "transcendent"
-];
-
-// ============ AUDIO ENGINE ============
-const AudioCtx = window.AudioContext || window.webkitAudioContext;
-let audioCtx;
-function ensureAudio() {
-  if (!audioCtx) audioCtx = new AudioCtx();
-  if (audioCtx.state === 'suspended') audioCtx.resume();
-}
-
-function playTone(freq, duration, type = 'sine', volume = 0.15) {
-  ensureAudio();
-  const osc = audioCtx.createOscillator();
-  const gain = audioCtx.createGain();
-  osc.type = type; osc.frequency.value = freq;
-  gain.gain.setValueAtTime(volume, audioCtx.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
-  osc.connect(gain); gain.connect(audioCtx.destination);
-  osc.start(); osc.stop(audioCtx.currentTime + duration);
-}
-
-function playNoise(duration, volume = 0.08) {
-  ensureAudio();
-  const bufferSize = audioCtx.sampleRate * duration;
-  const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-  const data = buffer.getChannelData(0);
-  for (let i = 0; i < bufferSize; i++) data[i] = (Math.random() * 2 - 1) * 0.5;
-  const source = audioCtx.createBufferSource();
-  const gain = audioCtx.createGain();
-  source.buffer = buffer;
-  gain.gain.setValueAtTime(volume, audioCtx.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
-  source.connect(gain); gain.connect(audioCtx.destination);
-  source.start();
-}
-
-const SOUNDS = {
-  plop: () => { playTone(120, 0.2, 'sine', 0.2); setTimeout(() => playTone(80, 0.15, 'sine', 0.15), 80); },
-  quack: () => { playTone(800, 0.08, 'square', 0.1); setTimeout(() => playTone(600, 0.12, 'square', 0.12), 80); setTimeout(() => playTone(900, 0.1, 'square', 0.08), 160); },
-  disco: () => { [523,659,784].forEach((f,i) => setTimeout(() => playTone(f, 0.12, 'square', 0.08), i*60)); },
-  flush: () => { playNoise(0.6, 0.12); playTone(200, 0.4, 'sawtooth', 0.04); },
-  swoosh: () => { playTone(1200, 0.15, 'sawtooth', 0.06); setTimeout(() => playTone(800, 0.1, 'sawtooth', 0.04), 60); },
-  croak: () => { playTone(150, 0.2, 'square', 0.1); setTimeout(() => playTone(120, 0.25, 'square', 0.12), 100); },
-  sniff: () => { playNoise(0.15, 0.06); setTimeout(() => playNoise(0.2, 0.08), 150); },
-  evil: () => { [200,250,200,300,200].forEach((f,i) => setTimeout(() => playTone(f, 0.1, 'sawtooth', 0.06), i*80)); },
-  splash: () => { playNoise(0.3, 0.1); playTone(400, 0.2, 'sine', 0.06); },
-  fail: () => {
-    [293,277,261,246].forEach((f,i) => setTimeout(() => playTone(f, 0.4, 'triangle', 0.12), i*300));
-  },
-  success: () => { [523,659,784,1047].forEach((f,i) => setTimeout(() => playTone(f, 0.15, 'square', 0.08), i*80)); },
-  bigFlush: () => {
-    playNoise(1.5, 0.15);
-    for(let i = 0; i < 20; i++) setTimeout(() => playTone(300 - i*12, 0.1, 'sawtooth', 0.03), i*70);
-  },
-  fart: () => { playTone(80, 0.3, 'sawtooth', 0.08); playNoise(0.2, 0.05); },
-};
-
-// ============ GAME STATE ============
-let state = {
-  mode: 'classic',
-  sequence: [],
-  playerIndex: 0,
-  level: 1,
-  score: 0,
-  round: 0,
-  isShowingSequence: false,
-  isPlayerTurn: false,
-  activeChars: [],
-  powerUps: { plunger: 1, replay: 1, hint: 1 },
-  timerInterval: null,
-  timeLeft: 0,
-  maxTime: 0,
-  totalCorrect: 0,
-  totalTaps: 0,
-  perfectRounds: 0,
-  startTime: 0,
-};
-
-// ============ DOM REFS ============
 const $ = id => document.getElementById(id);
+const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-// ============ BUBBLES ============
-function createBubbles() {
-  const c = $('bubbles');
-  for (let i = 0; i < 12; i++) {
-    const b = document.createElement('div');
-    b.className = 'bubble';
-    const size = 8 + Math.random() * 25;
-    b.style.cssText = `width:${size}px;height:${size}px;left:${Math.random()*95}%;animation-duration:${6+Math.random()*10}s;animation-delay:${Math.random()*8}s;`;
+// ===================== RETRO BACKGROUND =====================
+(function initBG(){
+  const c = $('bgCanvas'), ctx = c.getContext('2d');
+  function resize(){ c.width = window.innerWidth; c.height = window.innerHeight; draw(); }
+  function draw(){
+    ctx.fillStyle = '#1a1a2e'; ctx.fillRect(0,0,c.width,c.height);
+    ctx.strokeStyle = 'rgba(78,197,241,0.07)'; ctx.lineWidth = 1;
+    for(let x=0;x<c.width;x+=32){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,c.height);ctx.stroke();}
+    for(let y=0;y<c.height;y+=32){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(c.width,y);ctx.stroke();}
+    ctx.font = '10px serif'; ctx.globalAlpha = 0.06;
+    for(let i=0;i<15;i++) ctx.fillText(['🦆','💧','🫧','✦'][i%4], (i*137)%c.width, (i*89+50)%c.height);
+    ctx.globalAlpha = 1;
+  }
+  window.addEventListener('resize', resize); resize();
+})();
+
+// Pixel bubbles
+(function(){
+  const c = $('bubbles-container');
+  for(let i=0;i<15;i++){
+    const b = document.createElement('div'); b.className = 'pbubble';
+    b.style.cssText = `left:${Math.random()*95}%;animation-duration:${5+Math.random()*8}s;animation-delay:${Math.random()*6}s;`;
     c.appendChild(b);
   }
-}
-createBubbles();
+})();
 
-// ============ SCREEN MANAGEMENT ============
-function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
-  $(id).classList.remove('hidden');
-}
-function showTitle() {
-  clearTimer();
-  showScreen('title-screen');
-  $('fail-overlay').style.display = 'none';
-  $('fail-overlay').classList.add('hidden');
-}
-function showModeSelect() {
+// ===================== AUDIO ENGINE (CHIPTUNE) =====================
+const ACtx = window.AudioContext || window.webkitAudioContext;
+let actx;
+function ensureAudio(){ if(!actx) actx = new ACtx(); if(actx.state==='suspended') actx.resume(); }
+
+function chip(freq, dur, type='square', vol=0.1){
   ensureAudio();
-  SOUNDS.plop();
-  showScreen('mode-screen');
+  const o=actx.createOscillator(), g=actx.createGain();
+  o.type=type; o.frequency.value=freq;
+  g.gain.setValueAtTime(vol, actx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001, actx.currentTime+dur);
+  o.connect(g); g.connect(actx.destination); o.start(); o.stop(actx.currentTime+dur);
+}
+function noise(dur, vol=0.06){
+  ensureAudio();
+  const sz=actx.sampleRate*dur, buf=actx.createBuffer(1,sz,actx.sampleRate), d=buf.getChannelData(0);
+  for(let i=0;i<sz;i++) d[i]=(Math.random()*2-1)*0.4;
+  const s=actx.createBufferSource(), g=actx.createGain();
+  s.buffer=buf; g.gain.setValueAtTime(vol,actx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001,actx.currentTime+dur);
+  s.connect(g); g.connect(actx.destination); s.start();
 }
 
-// ============ DAILY SEED ============
-function dailySeed() {
-  const d = new Date();
-  return d.getFullYear() * 10000 + (d.getMonth()+1) * 100 + d.getDate();
+const SFX = {
+  plop:()=>{ chip(150,0.15,'sine',0.15); setTimeout(()=>chip(100,0.1,'sine',0.12),60); },
+  quack:()=>{ chip(900,0.06,'square',0.1); setTimeout(()=>chip(700,0.08,'square',0.1),50); setTimeout(()=>chip(1000,0.06,'square',0.08),100); },
+  disco:()=>{ [523,659,784].forEach((f,i)=>setTimeout(()=>chip(f,0.1,'square',0.07),i*50)); },
+  flush:()=>{ noise(0.5,0.1); chip(250,0.3,'sawtooth',0.04); },
+  swoosh:()=>{ chip(1400,0.12,'sawtooth',0.05); setTimeout(()=>chip(900,0.08,'sawtooth',0.04),40); },
+  croak:()=>{ chip(180,0.15,'square',0.1); setTimeout(()=>chip(140,0.2,'square',0.1),80); },
+  sniff:()=>{ noise(0.12,0.05); setTimeout(()=>noise(0.15,0.06),120); },
+  evil:()=>{ [220,280,220,320,220].forEach((f,i)=>setTimeout(()=>chip(f,0.08,'sawtooth',0.05),i*60)); },
+  splash:()=>{ noise(0.25,0.08); chip(500,0.15,'sine',0.05); },
+  coin:()=>{ chip(988,0.08,'square',0.1); setTimeout(()=>chip(1319,0.15,'square',0.1),80); },
+  fail:()=>{ [293,277,261,246].forEach((f,i)=>setTimeout(()=>chip(f,0.3,'triangle',0.1),i*250)); },
+  success:()=>{ [523,659,784,1047].forEach((f,i)=>setTimeout(()=>chip(f,0.12,'square',0.07),i*70)); },
+  bigFlush:()=>{ noise(1.2,0.12); for(let i=0;i<15;i++) setTimeout(()=>chip(280-i*14,0.08,'sawtooth',0.03),i*60); },
+  fart:()=>{ chip(90,0.25,'sawtooth',0.07); noise(0.15,0.04); },
+  correct:()=>{ chip(660,0.08,'square',0.08); setTimeout(()=>chip(880,0.12,'square',0.08),70); },
+  wrong:()=>{ chip(200,0.2,'sawtooth',0.1); chip(180,0.25,'sawtooth',0.08); },
+  flip:()=>{ chip(1200,0.05,'square',0.05); },
+  match:()=>{ [784,988,1175].forEach((f,i)=>setTimeout(()=>chip(f,0.1,'square',0.06),i*50)); },
+  levelup:()=>{ [523,587,659,698,784,880,988,1047].forEach((f,i)=>setTimeout(()=>chip(f,0.08,'square',0.06),i*40)); },
+};
+
+// ===================== TOUCH HELPER =====================
+function onTap(el, fn){
+  let touched = false;
+  el.addEventListener('touchend', (e)=>{
+    e.preventDefault(); e.stopPropagation();
+    if(!touched){ touched=true; fn(e); setTimeout(()=>touched=false, 250); }
+  }, {passive:false});
+  el.addEventListener('click', (e)=>{
+    if(!touched){ fn(e); }
+  });
 }
-function seededRandom(seed) {
-  let s = seed;
-  return function() {
-    s = (s * 16807) % 2147483647;
-    return (s - 1) / 2147483646;
-  };
-}
 
-// ============ START GAME ============
-function startGame(mode) {
-  SOUNDS.flush();
-  state.mode = mode;
-  state.sequence = [];
-  state.playerIndex = 0;
-  state.level = 1;
-  state.score = 0;
-  state.round = 0;
-  state.isShowingSequence = false;
-  state.isPlayerTurn = false;
-  state.totalCorrect = 0;
-  state.totalTaps = 0;
-  state.perfectRounds = 0;
-  state.startTime = Date.now();
-  state.powerUps = { plunger: 1, replay: 1, hint: 1 };
-  updatePowerUpUI();
-
-  // Pick active characters based on level
-  const charCount = Math.min(4 + Math.floor(state.level / 3), 9);
-  if (mode === 'daily') {
-    const rng = seededRandom(dailySeed());
-    const shuffled = [...CHARACTERS].sort(() => rng() - 0.5);
-    state.activeChars = shuffled.slice(0, 6);
-  } else {
-    state.activeChars = CHARACTERS.slice(0, charCount);
-  }
-
-  showScreen('game-screen');
-  $('mode-name').textContent = mode.toUpperCase();
-  $('fail-overlay').style.display = 'none';
+// ===================== SCREEN MANAGEMENT =====================
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.add('hidden'));
+  $(id).classList.remove('hidden');
   $('fail-overlay').classList.add('hidden');
-
-  const grid = $('emoji-grid');
-  grid.classList.remove('chaos', 'drunk');
-  if (mode === 'drunk') grid.classList.add('drunk');
-
-  $('timer-container').style.display = (mode === 'panic') ? 'block' : 'none';
-
-  buildGrid();
-  updateHeader();
-  setTimeout(() => nextRound(), 600);
 }
 
-function restartGame() { startGame(state.mode); }
+// ===================== INTRO =====================
+onTap($('btn-engage'), ()=>{
+  ensureAudio(); SFX.bigFlush();
+  setTimeout(()=>{ showScreen('hub'); updateHub(); },300);
+});
+onTap($('btn-ignore'), ()=>{
+  SFX.fart();
+  $('btn-ignore').textContent = "Fine. Your brain judged you.";
+  setTimeout(()=>{ $('btn-ignore').textContent = "Ignore Brain"; },2000);
+});
 
-// ============ BUILD GRID ============
-function buildGrid() {
-  const grid = $('emoji-grid');
-  grid.innerHTML = '';
-  const cols = state.activeChars.length <= 4 ? 2 : 3;
-  grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
-
-  state.activeChars.forEach((ch, i) => {
-    const btn = document.createElement('button');
-    btn.className = 'emoji-btn disabled';
-    btn.innerHTML = `<span style="line-height:1">${ch.emoji}</span><span class="emoji-name">${ch.name}</span>`;
-    btn.dataset.index = i;
-    // Unified tap handler for both mobile and desktop
-    function onTap(e) {
-      e.preventDefault();
-      e.stopPropagation();
-      if (btn.classList.contains('disabled')) return;
-      handleTap(i);
-    }
-    btn.addEventListener('touchend', onTap, { passive: false });
-    btn.addEventListener('mouseup', (e) => {
-      // Only fire on desktop (no touch support) to avoid double-firing
-      if (!('ontouchend' in window)) onTap(e);
-    });
-    grid.appendChild(btn);
+// ===================== HUB =====================
+function updateHub(){
+  $('hub-total').textContent = `Brain Flush Points: ${G.totalPoints}`;
+  $('best-simon').textContent = `Best: ${G.bestSimon||'--'}`;
+  $('best-flush').textContent = `Best: ${G.bestFlush||'--'}`;
+  $('best-tp').textContent = `Best: ${G.bestTP||'--'}`;
+  const ah = $('hub-achieve'); ah.innerHTML = '';
+  G.achievements.forEach(a=>{
+    const d=document.createElement('span'); d.className='sc-achieve'; d.textContent=a; ah.appendChild(d);
   });
 }
+onTap($('card-simon'), ()=>startSimon());
+onTap($('card-flush'), ()=>startFlush());
+onTap($('card-tp'), ()=>startTP());
 
-function setGridEnabled(enabled) {
-  document.querySelectorAll('.emoji-btn').forEach(b => {
-    b.classList.toggle('disabled', !enabled);
+// ===================== CHARACTERS =====================
+const CHARS = [
+  {emoji:'💩',name:'King Poop',sfx:'plop'},
+  {emoji:'🦆',name:'Sir Quacks',sfx:'quack'},
+  {emoji:'🍕',name:'Party Pizza',sfx:'disco'},
+  {emoji:'🚽',name:'The Judge',sfx:'flush'},
+  {emoji:'🧻',name:'TP Ninja',sfx:'swoosh'},
+  {emoji:'🐸',name:'Bath Frog',sfx:'croak'},
+  {emoji:'🧦',name:'Lost Sock',sfx:'sniff'},
+  {emoji:'🦠',name:'Germ Boss',sfx:'evil'},
+  {emoji:'🐙',name:'Sink Octo',sfx:'splash'},
+];
+const FAIL_MSGS = [
+  "That was embarrassing.","My pipes have seen smarter humans.","Did you forget already?",
+  "You had ONE job.","Maybe stick to breathing.","Your memory is… concerning.",
+  "I expected more from a human brain.","Try again before the next flush.",
+  "Even the soap is disappointed.","The rubber duck is crying.",
+];
+const WIN_MSGS = [
+  "Your brain is working! Suspicious!","Not bad for a bathroom break!","King Poop approves!",
+  "Sir Quacksalot nods respectfully.","The toilet is mildly impressed.","Even the germs are clapping.",
+  "Bathroom genius detected!","Your duck approves.","Your brain is officially operational.",
+  "You survived another bathroom brain challenge.",
+];
+const CONF = ["non-existent","questionable","shaky","building","decent","solid","confident","impressive","legendary","transcendent"];
+
+// ===================== ACHIEVEMENTS =====================
+function checkAchievements(score, rounds, game){
+  if(score>=20) G.achievements.add("💪 Solid Performance");
+  if(score>=40) G.achievements.add("🔧 Memory Plumber");
+  if(score>=100) G.achievements.add("👑 Royal Flush Genius");
+  if(rounds>=20) G.achievements.add("🧠 Bathroom Einstein");
+  if(game==='simon' && rounds<=2) G.achievements.add("💀 The Forgotten");
+}
+
+// ===================== FAIL OVERLAY =====================
+function showFail(score, rounds, game, stats){
+  const ov=$('fail-overlay'); ov.classList.remove('hidden');
+  $('score-card').style.display='none';
+  SFX.fail();
+  $('fail-judge').textContent='🚽';
+  $('fail-text').textContent=FAIL_MSGS[Math.floor(Math.random()*FAIL_MSGS.length)];
+  setTimeout(()=>SFX.bigFlush(), 1000);
+  setTimeout(()=>{
+    $('score-card').style.display='block';
+    $('sc-final').textContent=score;
+    $('sc-mem').textContent=`${stats?.mem??Math.min(10,Math.round(score/5))}/10`;
+    $('sc-foc').textContent=`${stats?.foc??Math.min(10,Math.round(rounds*1.5))}/10`;
+    $('sc-conf').textContent=CONF[Math.min(9,Math.floor(score/12))];
+    checkAchievements(score,rounds,game);
+    G.totalPoints+=score;
+    if(game==='simon'&&score>G.bestSimon) G.bestSimon=score;
+    if(game==='flush'&&score>G.bestFlush) G.bestFlush=score;
+    if(game==='tp'&&score>G.bestTP) G.bestTP=score;
+    const ac=$('sc-achieves'); ac.innerHTML='';
+    G.achievements.forEach(a=>{ const d=document.createElement('div'); d.className='sc-achieve'; d.textContent=a; ac.appendChild(d); });
+  }, 2200);
+}
+
+onTap($('sc-retry'), ()=>{ if(G.currentGame==='simon') startSimon(); else if(G.currentGame==='flush') startFlush(); else startTP(); });
+onTap($('sc-share'), ()=>{
+  const txt=`I scored ${$('sc-final').textContent} in Bathroom Brain Arcade 🚽🧠\nCan your brain handle it?`;
+  if(navigator.share) navigator.share({title:'Bathroom Brain Arcade',text:txt});
+  else if(navigator.clipboard){ navigator.clipboard.writeText(txt); $('fail-text').textContent='Copied! 📋'; }
+});
+onTap($('sc-home'), ()=>{ showScreen('hub'); updateHub(); });
+
+// =====================================================================
+//  GAME 1: POOP EMOJI SIMON
+// =====================================================================
+let S = {};
+function startSimon(){
+  G.currentGame='simon';
+  S={seq:[],pIdx:0,level:0,score:0,showing:false,playing:false,
+     chars:CHARS.slice(0,4),pu:{plunger:1,replay:1,hint:1},
+     correct:0,taps:0,rounds:0,t0:Date.now()};
+  showScreen('game-simon');
+  buildSimonGrid(); updateSimonPU();
+  setTimeout(()=>nextSimonRound(),500);
+}
+onTap($('simon-back'), ()=>{ S.playing=false; showScreen('hub'); updateHub(); });
+
+function buildSimonGrid(){
+  const g=$('simon-grid'); g.innerHTML='';
+  const cols=S.chars.length<=4?2:3;
+  g.style.gridTemplateColumns=`repeat(${cols},1fr)`;
+  S.chars.forEach((ch,i)=>{
+    const b=document.createElement('button');
+    b.className='simon-btn disabled';
+    b.innerHTML=`<span>${ch.emoji}</span><span class="sname">${ch.name}</span>`;
+    onTap(b, ()=>{ if(!b.classList.contains('disabled')) simonTap(i); });
+    g.appendChild(b);
   });
 }
+function setSimonEnabled(en){ document.querySelectorAll('.simon-btn').forEach(b=>b.classList.toggle('disabled',!en)); }
+function simonMsg(t){ $('simon-msg').textContent=t; }
+function buildSimonDots(){
+  const c=$('simon-dots'); c.innerHTML='';
+  S.seq.forEach(()=>{ const d=document.createElement('div'); d.className='sdot'; c.appendChild(d); });
+}
+function setDot(i,cls){ const d=$('simon-dots').children; if(d[i]) d[i].className='sdot '+cls; }
 
-// ============ HEADER ============
-function updateHeader() {
-  $('level-badge').textContent = `LVL ${state.level}`;
-  $('score-display').textContent = `💩 ${state.score}`;
+async function nextSimonRound(){
+  S.level++; S.rounds++; S.pIdx=0;
+  const cc=Math.min(4+Math.floor(S.level/3),9);
+  if(cc>S.chars.length){ S.chars=CHARS.slice(0,cc); buildSimonGrid(); }
+  S.seq.push(Math.floor(Math.random()*S.chars.length));
+  $('simon-score').textContent=`💩 ${S.score}`;
+  simonMsg("Prepare your brain… and your bowels.");
+  await sleep(1000); simonMsg(''); await playSimonSeq();
 }
 
-// ============ NEXT ROUND ============
-function nextRound() {
-  state.round++;
-  state.level = state.round;
-  state.playerIndex = 0;
-
-  // Expand active characters at higher levels
-  const charCount = Math.min(4 + Math.floor(state.level / 3), 9);
-  if (state.mode !== 'daily' && charCount > state.activeChars.length) {
-    state.activeChars = CHARACTERS.slice(0, charCount);
-    buildGrid();
+async function playSimonSeq(){
+  S.showing=true; setSimonEnabled(false); buildSimonDots();
+  const disp=$('simon-display'), spd=Math.max(250,600-S.level*18);
+  for(let i=0;i<S.seq.length;i++){
+    const ch=S.chars[S.seq[i]];
+    disp.textContent=ch.emoji;
+    disp.classList.remove('wiggle'); void disp.offsetWidth; disp.classList.add('wiggle');
+    SFX[ch.sfx]();
+    const btns=document.querySelectorAll('.simon-btn');
+    if(btns[S.seq[i]]){btns[S.seq[i]].classList.add('flash');setTimeout(()=>btns[S.seq[i]].classList.remove('flash'),300);}
+    await sleep(spd); disp.textContent=''; await sleep(120);
   }
-
-  // Chaos mode at level 20+
-  const grid = $('emoji-grid');
-  if (state.level >= 20 && state.mode !== 'drunk') {
-    grid.classList.add('chaos');
-  }
-
-  // Add new emoji to sequence
-  const pick = Math.floor(Math.random() * state.activeChars.length);
-  state.sequence.push(pick);
-
-  updateHeader();
-  showMessage("Prepare your brain… and your bowels.");
-
-  setTimeout(() => {
-    showMessage('');
-    playSequence();
-  }, 1200);
+  S.showing=false; S.playing=true; setSimonEnabled(true);
+  simonMsg("Your turn! 🧠");
 }
 
-// ============ PLAY SEQUENCE ============
-async function playSequence() {
-  state.isShowingSequence = true;
-  setGridEnabled(false);
-  buildProgressDots();
-
-  const display = $('sequence-display');
-  const speed = Math.max(300, 700 - state.level * 20);
-
-  for (let i = 0; i < state.sequence.length; i++) {
-    const ch = state.activeChars[state.sequence[i]];
-    display.textContent = ch.emoji;
-    display.classList.remove('wiggle');
-    void display.offsetWidth;
-    display.classList.add('wiggle');
-    SOUNDS[ch.sound]();
-
-    // Flash the grid button too
-    const btns = document.querySelectorAll('.emoji-btn');
-    const btn = btns[state.sequence[i]];
-    if (btn) { btn.classList.add('flash'); setTimeout(() => btn.classList.remove('flash'), 400); }
-
-    await sleep(speed);
-    display.textContent = '';
-    await sleep(150);
-  }
-
-  state.isShowingSequence = false;
-  state.isPlayerTurn = true;
-  setGridEnabled(true);
-  showMessage("Your turn! 🧠");
-
-  if (state.mode === 'panic') startTimer();
-}
-
-// ============ TIMER (Panic mode) ============
-function startTimer() {
-  clearTimer();
-  state.maxTime = Math.max(3, 8 - state.level * 0.3);
-  state.timeLeft = state.maxTime;
-  $('timer-bar').style.width = '100%';
-  state.timerInterval = setInterval(() => {
-    state.timeLeft -= 0.05;
-    const pct = Math.max(0, (state.timeLeft / state.maxTime) * 100);
-    $('timer-bar').style.width = pct + '%';
-    if (state.timeLeft <= 0) {
-      clearTimer();
-      handleFail();
-    }
-  }, 50);
-}
-function clearTimer() {
-  if (state.timerInterval) { clearInterval(state.timerInterval); state.timerInterval = null; }
-}
-
-// ============ PROGRESS DOTS ============
-function buildProgressDots() {
-  const c = $('progress-dots');
-  c.innerHTML = '';
-  state.sequence.forEach((_, i) => {
-    const d = document.createElement('div');
-    d.className = 'pdot';
-    c.appendChild(d);
-  });
-}
-function updateProgressDot(index, cls) {
-  const dots = $('progress-dots').children;
-  if (dots[index]) dots[index].className = 'pdot ' + cls;
-}
-
-// ============ HANDLE TAP ============
-function handleTap(charIndex) {
-  if (!state.isPlayerTurn || state.isShowingSequence) return;
-
-  state.totalTaps++;
-  const ch = state.activeChars[charIndex];
-  SOUNDS[ch.sound]();
-
-  const expected = state.sequence[state.playerIndex];
-
-  if (charIndex === expected) {
-    state.totalCorrect++;
-    updateProgressDot(state.playerIndex, 'done');
-
-    // Flash
-    const btns = document.querySelectorAll('.emoji-btn');
-    btns[charIndex].classList.add('flash');
-    setTimeout(() => btns[charIndex].classList.remove('flash'), 300);
-
-    $('sequence-display').textContent = ch.emoji;
-    setTimeout(() => { $('sequence-display').textContent = ''; }, 250);
-
-    state.playerIndex++;
-
-    if (state.playerIndex >= state.sequence.length) {
-      // Round complete!
-      state.isPlayerTurn = false;
-      clearTimer();
-      state.perfectRounds++;
-      const pointsEarned = state.sequence.length + (state.mode === 'panic' ? Math.ceil(state.timeLeft) : 0);
-      state.score += pointsEarned;
-      updateHeader();
-
-      SOUNDS.success();
-      const msg = SUCCESS_MESSAGES[Math.floor(Math.random() * SUCCESS_MESSAGES.length)];
-      showMessage(msg);
-
-      // Chaos fart distraction
-      if (state.level >= 20 && Math.random() > 0.5) {
-        setTimeout(() => SOUNDS.fart(), 400);
-      }
-
-      setTimeout(() => {
-        showMessage('');
-        nextRound();
-      }, 1500);
+function simonTap(idx){
+  if(!S.playing||S.showing) return;
+  S.taps++;
+  const ch=S.chars[idx]; SFX[ch.sfx]();
+  const btns=document.querySelectorAll('.simon-btn');
+  if(idx===S.seq[S.pIdx]){
+    S.correct++; setDot(S.pIdx,'done');
+    btns[idx].classList.add('flash'); setTimeout(()=>btns[idx].classList.remove('flash'),250);
+    $('simon-display').textContent=ch.emoji; setTimeout(()=>{$('simon-display').textContent='';},200);
+    S.pIdx++;
+    if(S.pIdx>=S.seq.length){
+      S.playing=false; S.score+=S.seq.length; SFX.coin();
+      $('simon-score').textContent=`💩 ${S.score}`;
+      simonMsg(WIN_MSGS[Math.floor(Math.random()*WIN_MSGS.length)]);
+      if(S.level>=20&&Math.random()>0.5) setTimeout(()=>SFX.fart(),300);
+      setTimeout(()=>{ simonMsg(''); nextSimonRound(); },1400);
     }
   } else {
-    // WRONG!
-    const btns = document.querySelectorAll('.emoji-btn');
-    btns[charIndex].classList.add('wrong');
-    setTimeout(() => btns[charIndex].classList.remove('wrong'), 500);
-    updateProgressDot(state.playerIndex, 'wrong');
-    handleFail();
+    btns[idx].classList.add('wrong'); setTimeout(()=>btns[idx].classList.remove('wrong'),400);
+    setDot(S.pIdx,'wrong'); S.playing=false; setSimonEnabled(false);
+    const mem=Math.min(10,Math.round((S.correct/Math.max(1,S.taps))*10));
+    const foc=Math.min(10,Math.round(S.rounds/Math.max(1,(Date.now()-S.t0)/30000)*5));
+    showFail(S.score,S.rounds,'simon',{mem,foc});
   }
 }
 
-// ============ FAIL ============
-function handleFail() {
-  state.isPlayerTurn = false;
-  clearTimer();
-  setGridEnabled(false);
-
-  SOUNDS.fail();
-
-  const overlay = $('fail-overlay');
-  overlay.style.display = 'flex';
-  overlay.classList.remove('hidden');
-  $('score-card').style.display = 'none';
-
-  // Flush effect
-  const fx = $('flush-fx');
-  fx.style.animation = 'none';
-  void fx.offsetWidth;
-  fx.style.animation = 'flush-spin 1s ease-in-out';
-
-  // Judge toilet slides in
-  $('judge-emoji').textContent = '🚽';
-  const failMsg = FAIL_MESSAGES[Math.floor(Math.random() * FAIL_MESSAGES.length)];
-  $('fail-message').textContent = failMsg;
-
-  setTimeout(() => {
-    SOUNDS.bigFlush();
-  }, 1200);
-
-  setTimeout(() => showScoreCard(), 2500);
-}
-
-// ============ SCORE CARD ============
-function showScoreCard() {
-  $('score-card').style.display = 'block';
-  $('final-score').textContent = state.score;
-
-  const memoryScore = Math.min(10, Math.round((state.totalCorrect / Math.max(1, state.totalTaps)) * 10));
-  const elapsed = (Date.now() - state.startTime) / 1000;
-  const focusScore = Math.min(10, Math.round(state.perfectRounds / Math.max(1, elapsed / 30) * 5));
-  const confIdx = Math.min(9, Math.floor(state.score / 12));
-
-  $('stat-memory').textContent = `${memoryScore}/10`;
-  $('stat-focus').textContent = `${focusScore}/10`;
-  $('stat-confidence').textContent = CONFIDENCE_LEVELS[confIdx];
-
-  // Achievements
-  const area = $('achievement-area');
-  area.innerHTML = '';
-  const earned = [];
-  if (state.score >= ACHIEVEMENTS.solid.threshold) earned.push(ACHIEVEMENTS.solid);
-  if (state.score >= ACHIEVEMENTS.plumbing.threshold) earned.push(ACHIEVEMENTS.plumbing);
-  if (state.score >= ACHIEVEMENTS.royal.threshold) earned.push(ACHIEVEMENTS.royal);
-  if (state.perfectRounds >= ACHIEVEMENTS.einstein.rounds) earned.push(ACHIEVEMENTS.einstein);
-  if (state.level === 2) earned.push(ACHIEVEMENTS.forgotten);
-
-  earned.forEach(a => {
-    const div = document.createElement('div');
-    div.className = 'achievement-pop';
-    div.textContent = `${a.icon} ${a.name}`;
-    area.appendChild(div);
+// Simon power-ups
+function updateSimonPU(){
+  ['plunger','replay','hint'].forEach(k=>{
+    $(`pu-${k}-c`).textContent=S.pu[k]; $(`pu-${k}`).disabled=S.pu[k]<=0;
   });
 }
-
-// ============ SHARE ============
-function shareScore() {
-  const text = `I survived Level ${state.level} in Poop Emoji Simon 🚽🧠\nBrain Flush Score: ${state.score}\nCan your brain handle it?`;
-  if (navigator.share) {
-    navigator.share({ title: 'Poop Emoji Simon', text });
-  } else if (navigator.clipboard) {
-    navigator.clipboard.writeText(text);
-    showMessage('Copied to clipboard! 📋');
-    setTimeout(() => showMessage(''), 2000);
-  }
-}
-
-// ============ POWER-UPS ============
-function usePowerUp(type) {
-  if (state.powerUps[type] <= 0 || !state.isPlayerTurn) return;
-  state.powerUps[type]--;
-  updatePowerUpUI();
-
-  if (type === 'plunger') {
-    // Remove last emoji from remaining sequence (skip current)
-    if (state.sequence.length > state.playerIndex + 1) {
-      state.sequence.splice(state.sequence.length - 1, 1);
-      buildProgressDots();
-      for (let i = 0; i < state.playerIndex; i++) updateProgressDot(i, 'done');
-      SOUNDS.plop();
-      showMessage("🪠 Plunger used! Last one removed!");
-      setTimeout(() => showMessage("Your turn! 🧠"), 1000);
-    }
-  } else if (type === 'replay') {
-    state.isPlayerTurn = false;
-    clearTimer();
-    SOUNDS.splash();
-    showMessage("🧴 Memory Spray! Replaying...");
-    setTimeout(() => playSequence(), 800);
-  } else if (type === 'hint') {
-    // Duck whispers the next emoji
-    const nextChar = state.activeChars[state.sequence[state.playerIndex]];
-    SOUNDS.quack();
-    $('sequence-display').textContent = nextChar.emoji;
-    showMessage(`🦆 "${nextChar.name}!" whispers the duck`);
-    setTimeout(() => {
-      $('sequence-display').textContent = '';
-      showMessage("Your turn! 🧠");
-    }, 1200);
-  }
-}
-
-function updatePowerUpUI() {
-  ['plunger', 'replay', 'hint'].forEach(type => {
-    $(`pu-${type}-count`).textContent = state.powerUps[type];
-    $(`pu-${type}`).disabled = state.powerUps[type] <= 0;
-  });
-}
-
-// ============ UTILS ============
-function showMessage(text) {
-  $('message-banner').textContent = text;
-}
-
-function sleep(ms) {
-  return new Promise(r => setTimeout(r, ms));
-}
-
-// Prevent pinch zoom only
-document.addEventListener('touchstart', e => {
-  if (e.touches.length > 1) e.preventDefault();
-}, { passive: false });
-
-// ============ PWA SERVICE WORKER ============
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').catch(() => {});
-}
-
-// ============ INSTALL PROMPT ============
-let deferredPrompt;
-window.addEventListener('beforeinstallprompt', e => {
-  e.preventDefault();
-  deferredPrompt = e;
+onTap($('pu-plunger'),()=>{
+  if(!S.playing||S.pu.plunger<=0) return;
+  if(S.seq.length>S.pIdx+1){S.pu.plunger--;S.seq.splice(S.seq.length-1,1);buildSimonDots();
+  for(let i=0;i<S.pIdx;i++) setDot(i,'done');SFX.plop();simonMsg("🪠 Plunger! Last removed!");
+  setTimeout(()=>simonMsg("Your turn! 🧠"),800);updateSimonPU();}
 });
+onTap($('pu-replay'),()=>{
+  if(!S.playing||S.pu.replay<=0) return;
+  S.pu.replay--;S.playing=false;SFX.splash();simonMsg("🧴 Memory Spray! Replaying...");
+  setTimeout(()=>playSimonSeq(),600);updateSimonPU();
+});
+onTap($('pu-hint'),()=>{
+  if(!S.playing||S.pu.hint<=0) return;
+  S.pu.hint--;const nxt=S.chars[S.seq[S.pIdx]];SFX.quack();
+  $('simon-display').textContent=nxt.emoji;
+  simonMsg(`🦆 "${nxt.name}!" whispers the duck`);
+  setTimeout(()=>{$('simon-display').textContent='';simonMsg("Your turn! 🧠");},1000);
+  updateSimonPU();
+});
+
+// =====================================================================
+//  GAME 2: FLUSH THAT MEMORY
+// =====================================================================
+const FLUSH_ITEMS = [
+  {emoji:'🍌',name:'banana'},{emoji:'👑',name:'crown'},{emoji:'🐟',name:'fish'},
+  {emoji:'🧦',name:'sock'},{emoji:'🍕',name:'pizza'},{emoji:'🌮',name:'taco'},
+  {emoji:'🦆',name:'duck'},{emoji:'👽',name:'alien'},{emoji:'🌯',name:'burrito'},
+  {emoji:'🧼',name:'soap'},{emoji:'🪠',name:'plunger'},{emoji:'🎸',name:'guitar'},
+  {emoji:'🍩',name:'donut'},{emoji:'🦑',name:'squid'},{emoji:'🎩',name:'tophat'},
+  {emoji:'🌶️',name:'pepper'},{emoji:'🧊',name:'ice'},{emoji:'🎯',name:'target'},
+];
+let F = {};
+
+function startFlush(){
+  G.currentGame='flush';
+  F={round:0,score:0,lives:3,streak:0};
+  showScreen('game-flush'); nextFlushRound();
+}
+onTap($('flush-back'), ()=>{ showScreen('hub'); updateHub(); });
+
+async function nextFlushRound(){
+  F.round++;
+  const numItems=Math.min(3+Math.floor(F.round/2),8);
+  $('flush-round').textContent=`Round ${F.round} · ${'❤️'.repeat(F.lives)}`;
+  $('flush-score').textContent=`🚽 ${F.score}`;
+  $('flush-msg').textContent='Remember these items!';
+  $('flush-options').innerHTML='';
+
+  const shuffled=[...FLUSH_ITEMS].sort(()=>Math.random()-0.5);
+  const shown=shuffled.slice(0,numItems);
+  const imposter=shuffled[numItems];
+
+  const bowl=$('flush-bowl');
+  bowl.classList.remove('flushing'); bowl.innerHTML='';
+  shown.forEach((item,i)=>{
+    const el=document.createElement('span'); el.className='flush-item';
+    el.textContent=item.emoji; el.style.animationDelay=(i*0.2)+'s';
+    bowl.appendChild(el);
+  });
+
+  await sleep(1500+numItems*400);
+
+  $('flush-msg').textContent='💨 FLUSHING!';
+  SFX.flush();
+  bowl.querySelectorAll('.flush-item').forEach(el=>el.classList.add('vanish'));
+  bowl.classList.add('flushing');
+  await sleep(1200);
+  bowl.innerHTML=''; bowl.classList.remove('flushing');
+
+  $('flush-msg').textContent='Which item was NOT there?';
+
+  const opts=[imposter,...shown.sort(()=>Math.random()-0.5).slice(0,3)].sort(()=>Math.random()-0.5);
+  const oc=$('flush-options'); oc.innerHTML='';
+  opts.forEach(item=>{
+    const btn=document.createElement('button'); btn.className='flush-opt';
+    btn.textContent=item.emoji; btn.dataset.name=item.name;
+    onTap(btn, ()=>flushAnswer(btn,item,imposter));
+    oc.appendChild(btn);
+  });
+}
+
+function flushAnswer(btn,picked,imposter){
+  if(btn.classList.contains('disabled')) return;
+  document.querySelectorAll('.flush-opt').forEach(b=>b.classList.add('disabled'));
+  if(picked.name===imposter.name){
+    btn.classList.add('correct'); SFX.coin();
+    F.streak++; F.score+=5+F.streak*2;
+    $('flush-msg').textContent=WIN_MSGS[Math.floor(Math.random()*WIN_MSGS.length)];
+    $('flush-score').textContent=`🚽 ${F.score}`;
+    setTimeout(()=>nextFlushRound(),1200);
+  } else {
+    btn.classList.add('incorrect'); SFX.wrong();
+    document.querySelectorAll('.flush-opt').forEach(b=>{ if(b.dataset.name===imposter.name) b.classList.add('correct'); });
+    F.streak=0; F.lives--;
+    $('flush-round').textContent=`Round ${F.round} · ${'❤️'.repeat(Math.max(0,F.lives))}`;
+    if(F.lives<=0){
+      setTimeout(()=>showFail(F.score,F.round,'flush'),1000);
+    } else {
+      $('flush-msg').textContent=`Wrong! It was ${imposter.emoji}`;
+      setTimeout(()=>nextFlushRound(),1500);
+    }
+  }
+}
+
+// =====================================================================
+//  GAME 3: TOILET PAPER PANIC
+// =====================================================================
+const TP_ICONS=['🦆','🌮','👽','🌯','🧼','🪠','🎸','🍩','🐙','🌶️','🎩','🧦','🍕','🐸','🦑','🎯','🧊','💩'];
+let T={};
+
+function startTP(){
+  G.currentGame='tp';
+  T={round:0,score:0,moves:0,matches:0,totalPairs:0,flipped:[],locked:false};
+  showScreen('game-tp'); nextTPRound();
+}
+onTap($('tp-back'), ()=>{ showScreen('hub'); updateHub(); });
+
+async function nextTPRound(){
+  T.round++; T.matches=0; T.flipped=[]; T.locked=false;
+  const sizes=[[2,2],[2,3],[3,4],[4,4],[4,5],[4,6]];
+  const [rows,cols]=sizes[Math.min(T.round-1,sizes.length-1)];
+  const numPairs=(rows*cols)/2;
+  T.totalPairs=numPairs;
+
+  $('tp-msg').textContent=`Round ${T.round} — Memorize!`;
+  $('tp-stats').textContent=`Pairs: 0/${numPairs} · Moves: ${T.moves}`;
+  $('tp-score').textContent=`🧻 ${T.score}`;
+
+  const icons=[...TP_ICONS].sort(()=>Math.random()-0.5).slice(0,numPairs);
+  const cards=[...icons,...icons].sort(()=>Math.random()-0.5);
+
+  const grid=$('tp-grid'); grid.innerHTML='';
+  grid.style.gridTemplateColumns=`repeat(${cols},1fr)`;
+
+  cards.forEach((icon,i)=>{
+    const card=document.createElement('div');
+    card.className='tp-card peek'; card.textContent=icon;
+    card.dataset.icon=icon; card.dataset.idx=i;
+    onTap(card, ()=>tpFlip(card));
+    grid.appendChild(card);
+  });
+
+  await sleep(1200+numPairs*200);
+  SFX.flip();
+  $('tp-msg').textContent='Find the pairs!';
+  document.querySelectorAll('.tp-card').forEach(c=>{
+    c.classList.remove('peek'); c.classList.add('face-down'); c.textContent='';
+  });
+}
+
+function tpFlip(card){
+  if(T.locked||card.classList.contains('matched')||!card.classList.contains('face-down')||T.flipped.length>=2) return;
+  SFX.flip();
+  card.classList.remove('face-down'); card.textContent=card.dataset.icon;
+  T.flipped.push(card);
+
+  if(T.flipped.length===2){
+    T.moves++; T.locked=true;
+    const [a,b]=T.flipped;
+    if(a.dataset.icon===b.dataset.icon){
+      setTimeout(()=>{
+        SFX.match(); a.classList.add('matched'); b.classList.add('matched');
+        T.matches++; T.score+=10;
+        $('tp-stats').textContent=`Pairs: ${T.matches}/${T.totalPairs} · Moves: ${T.moves}`;
+        $('tp-score').textContent=`🧻 ${T.score}`;
+        T.flipped=[]; T.locked=false;
+        if(T.matches>=T.totalPairs){
+          SFX.levelup();
+          const bonus=Math.max(0,T.totalPairs*5-T.moves*2);
+          T.score+=bonus;
+          $('tp-msg').textContent=`Round clear! +${bonus} bonus!`;
+          $('tp-score').textContent=`🧻 ${T.score}`;
+          setTimeout(()=>nextTPRound(),1500);
+        }
+      },300);
+    } else {
+      setTimeout(()=>{
+        SFX.wrong(); a.classList.add('wrong-match'); b.classList.add('wrong-match');
+        setTimeout(()=>{
+          a.classList.remove('wrong-match'); b.classList.remove('wrong-match');
+          a.classList.add('face-down'); b.classList.add('face-down');
+          a.textContent=''; b.textContent='';
+          T.flipped=[]; T.locked=false;
+          $('tp-stats').textContent=`Pairs: ${T.matches}/${T.totalPairs} · Moves: ${T.moves}`;
+        },500);
+      },400);
+
+      const maxMoves=T.totalPairs*6;
+      if(T.moves>=maxMoves&&T.matches<T.totalPairs){
+        setTimeout(()=>{
+          const mem=Math.min(10,Math.round((T.matches/T.totalPairs)*10));
+          const foc=Math.min(10,10-Math.round(((T.moves-T.totalPairs)/(maxMoves-T.totalPairs))*10));
+          showFail(T.score,T.round,'tp',{mem,foc});
+        },1200);
+      }
+    }
+  }
+}
+
+// ===================== PREVENT ZOOM =====================
+document.addEventListener('touchstart', e=>{ if(e.touches.length>1) e.preventDefault(); }, {passive:false});
+
+// ===================== PWA =====================
+if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
 </body>
 </html>
